@@ -20,7 +20,11 @@
     "clean": "rm -rf dist",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
-    "verify": "bun run typecheck && bun run build",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "verify": "bun run typecheck && bun run lint && bun run build",
     "prepublishOnly": "bun run clean && bun run verify"
   },
   "files": [
@@ -40,7 +44,13 @@
     "@sudobility/types": "^1.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@sudobility/types": "^1.9.31",
+    "@typescript-eslint/eslint-plugin": "^8.50.0",
+    "@typescript-eslint/parser": "^8.50.0",
+    "eslint": "^9.39.2",
+    "globals": "^16.5.0",
+    "prettier": "^3.7.4",
     "typescript": "^5.9.3"
   },
   "publishConfig": {

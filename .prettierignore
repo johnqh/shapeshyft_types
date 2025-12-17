@@ -1,10 +1,19 @@
+# Dependencies
 node_modules/
+
+# Build outputs
 dist/
 build/
-coverage/
-*.min.js
-*.min.css
+*.d.ts
+
+# Package files
+*.tgz
 package-lock.json
-yarn.lock
-pnpm-lock.yaml
-bun.lock
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

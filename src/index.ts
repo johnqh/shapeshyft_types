@@ -7,6 +7,7 @@
 export type {
   ApiResponse,
   BaseResponse,
+  NetworkClient,
   Optional,
   PaginatedResponse,
   PaginationInfo,
@@ -112,6 +113,7 @@ export interface Endpoint {
   input_schema: JsonSchema | null;
   output_schema: JsonSchema | null;
   description: string | null;
+  context: string | null;
   is_active: boolean | null;
   created_at: Date | null;
   updated_at: Date | null;
@@ -185,6 +187,7 @@ export interface EndpointCreateRequest {
   input_schema: Optional<JsonSchema>;
   output_schema: Optional<JsonSchema>;
   description: Optional<string>;
+  context: Optional<string>;
 }
 
 export interface EndpointUpdateRequest {
@@ -196,6 +199,7 @@ export interface EndpointUpdateRequest {
   input_schema: Optional<JsonSchema>;
   output_schema: Optional<JsonSchema>;
   description: Optional<string>;
+  context: Optional<string>;
   is_active: Optional<boolean>;
 }
 
