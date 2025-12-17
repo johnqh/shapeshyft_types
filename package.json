@@ -1,0 +1,49 @@
+{
+  "name": "@sudobility/shapeshyft_types",
+  "version": "1.0.0",
+  "description": "TypeScript types for ShapeShyft API - LLM structured output platform",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "bun run build:esm && bun run build:cjs",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json && bun run build:cjs-rename",
+    "build:cjs-rename": "find dist -name '*.js' -not -name '*.cjs' -exec sh -c 'cp \"$1\" \"${1%.js}.cjs\"' _ {} \\;",
+    "clean": "rm -rf dist",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "verify": "bun run typecheck && bun run build",
+    "prepublishOnly": "bun run clean && bun run verify"
+  },
+  "files": [
+    "dist/**/*"
+  ],
+  "keywords": [
+    "typescript",
+    "types",
+    "llm",
+    "shapeshyft",
+    "api",
+    "structured-output"
+  ],
+  "author": "Sudobility",
+  "license": "MIT",
+  "peerDependencies": {
+    "@sudobility/types": "^1.0.0"
+  },
+  "devDependencies": {
+    "@sudobility/types": "^1.9.31",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
