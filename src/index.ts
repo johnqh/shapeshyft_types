@@ -24,12 +24,6 @@ export type LlmProvider = 'openai' | 'gemini' | 'anthropic' | 'llm_server';
 
 export type HttpMethod = 'GET' | 'POST';
 
-export type EndpointType =
-  | 'structured_in_structured_out'
-  | 'text_in_structured_out'
-  | 'structured_in_api_out'
-  | 'text_in_api_out';
-
 // =============================================================================
 // JSON Schema Type
 // =============================================================================
@@ -108,7 +102,6 @@ export interface Endpoint {
   endpoint_name: string;
   display_name: string;
   http_method: HttpMethod;
-  endpoint_type: EndpointType;
   llm_key_id: string;
   input_schema: JsonSchema | null;
   output_schema: JsonSchema | null;
@@ -182,7 +175,6 @@ export interface EndpointCreateRequest {
   endpoint_name: string;
   display_name: string;
   http_method: Optional<HttpMethod>;
-  endpoint_type: EndpointType;
   llm_key_id: string;
   input_schema: Optional<JsonSchema>;
   output_schema: Optional<JsonSchema>;
@@ -194,7 +186,6 @@ export interface EndpointUpdateRequest {
   endpoint_name: Optional<string>;
   display_name: Optional<string>;
   http_method: Optional<HttpMethod>;
-  endpoint_type: Optional<EndpointType>;
   llm_key_id: Optional<string>;
   input_schema: Optional<JsonSchema>;
   output_schema: Optional<JsonSchema>;
@@ -213,7 +204,6 @@ export interface ProjectQueryParams {
 
 export interface EndpointQueryParams {
   is_active: Optional<string>;
-  endpoint_type: Optional<EndpointType>;
 }
 
 export interface UsageAnalyticsQueryParams {
@@ -290,10 +280,46 @@ export interface AiExecutionResponse {
   };
 }
 
-export interface AiPayloadResponse {
-  api_payload: Record<string, unknown>;
+/** Response from /prompt endpoint - returns just the generated prompt */
+export interface AiPromptResponse {
+  prompt: string;
+}
+
+// =============================================================================
+// ApiHelper Types
+// =============================================================================
+
+/** Input for ApiHelper.prompt() */
+export interface PromptInput {
+  inputData: unknown;
+  outputSchema: JsonSchema | null;
+  description: string | null;
+  context: string | null;
   provider: LlmProvider;
-  endpoint_hint: string | null;
+}
+
+/** Input for ApiHelper.request() */
+export interface ApiHelperRequestInput {
+  prompt: string;
+  outputSchema: JsonSchema;
+  provider: LlmProvider;
+  providerConfig: {
+    apiKey?: string;
+    endpointUrl?: string;
+    model?: string;
+  };
+  options?: {
+    model?: string;
+    temperature?: number;
+    maxTokens?: number;
+  };
+}
+
+/** Output from ApiHelper.request() */
+export interface ApiHelperRequestOutput {
+  apiPayload: Record<string, unknown>;
+  endpointUrl: string;
+  provider: LlmProvider;
 }
 
 // =============================================================================
