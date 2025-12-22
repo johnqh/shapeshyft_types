@@ -125,6 +125,16 @@ export interface UsageAnalytics {
   request_metadata: Record<string, unknown> | null;
 }
 
+export interface UserSettings {
+  uuid: string | null;
+  user_id: string;
+  organization_name: string | null;
+  organization_path: string;
+  is_default: boolean;
+  created_at: Date | null;
+  updated_at: Date | null;
+}
+
 // =============================================================================
 // Request Body Types
 // =============================================================================
@@ -139,6 +149,12 @@ export interface UserCreateRequest {
 export interface UserUpdateRequest {
   email: Optional<string>;
   display_name: Optional<string>;
+}
+
+// User Settings requests
+export interface UserSettingsUpdateRequest {
+  organization_name: Optional<string>;
+  organization_path: Optional<string>;
 }
 
 // LLM API Key requests
