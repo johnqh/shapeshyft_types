@@ -253,6 +253,12 @@ export interface UsageByDate extends UsageAggregate {
   date: string;
 }
 
+/** Compound response from analytics API endpoint */
+export interface AnalyticsResponse {
+  aggregate: UsageAggregate;
+  by_endpoint: UsageByEndpoint[];
+}
+
 // =============================================================================
 // LLM Request/Response Types
 // =============================================================================
@@ -359,6 +365,31 @@ export function errorResponse(error: string): BaseResponse<never> {
     timestamp: new Date().toISOString(),
   };
 }
+
+// =============================================================================
+// API Response Type Aliases (for FE client convenience)
+// =============================================================================
+
+// Entity list responses
+export type ProjectListResponse = BaseResponse<Project[]>;
+export type LlmApiKeyListResponse = BaseResponse<LlmApiKeySafe[]>;
+export type EndpointListResponse = BaseResponse<Endpoint[]>;
+
+// Single entity responses
+export type ProjectResponse = BaseResponse<Project>;
+export type LlmApiKeyResponse = BaseResponse<LlmApiKeySafe>;
+export type EndpointResponse = BaseResponse<Endpoint>;
+export type UserSettingsResponse = BaseResponse<UserSettings>;
+
+// Analytics response
+export type AnalyticsApiResponse = BaseResponse<AnalyticsResponse>;
+
+// AI execution responses
+export type AiExecutionApiResponse = BaseResponse<AiExecutionResponse>;
+export type AiPromptApiResponse = BaseResponse<AiPromptResponse>;
+
+// Health check response
+export type HealthCheckResponse = BaseResponse<HealthCheckData>;
 
 // =============================================================================
 // Health check response
