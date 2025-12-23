@@ -105,7 +105,7 @@ export interface Endpoint {
   llm_key_id: string;
   input_schema: JsonSchema | null;
   output_schema: JsonSchema | null;
-  description: string | null;
+  instructions: string | null;
   context: string | null;
   is_active: boolean | null;
   created_at: Date | null;
@@ -194,7 +194,7 @@ export interface EndpointCreateRequest {
   llm_key_id: string;
   input_schema: Optional<JsonSchema>;
   output_schema: Optional<JsonSchema>;
-  description: Optional<string>;
+  instructions: Optional<string>;
   context: Optional<string>;
 }
 
@@ -205,7 +205,7 @@ export interface EndpointUpdateRequest {
   llm_key_id: Optional<string>;
   input_schema: Optional<JsonSchema>;
   output_schema: Optional<JsonSchema>;
-  description: Optional<string>;
+  instructions: Optional<string>;
   context: Optional<string>;
   is_active: Optional<boolean>;
 }
@@ -315,7 +315,7 @@ export interface AiPromptResponse {
 export interface PromptInput {
   inputData: unknown;
   outputSchema: JsonSchema | null;
-  description: string | null;
+  instructions: string | null;
   context: string | null;
   provider: LlmProvider;
 }
