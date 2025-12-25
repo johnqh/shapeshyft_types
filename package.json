@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/shapeshyft_types",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "TypeScript types for ShapeShyft API - LLM structured output platform",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -41,7 +41,7 @@
   "author": "Sudobility",
   "license": "MIT",
   "peerDependencies": {
-    "@sudobility/types": "^1.0.0"
+    "@sudobility/types": "^1.9.31"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
