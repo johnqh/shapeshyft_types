@@ -92,6 +92,9 @@ export interface Project {
   display_name: string;
   description: string | null;
   is_active: boolean | null;
+  // API Key fields (prefix only - full key is never returned in Project response)
+  api_key_prefix: string | null;
+  api_key_created_at: Date | null;
   created_at: Date | null;
   updated_at: Date | null;
 }
@@ -108,6 +111,8 @@ export interface Endpoint {
   instructions: string | null;
   context: string | null;
   is_active: boolean | null;
+  // IP allowlist - array of IPv4 addresses, null = allow all
+  ip_allowlist: string[] | null;
   created_at: Date | null;
   updated_at: Date | null;
 }
@@ -199,15 +204,16 @@ export interface EndpointCreateRequest {
 }
 
 export interface EndpointUpdateRequest {
-  endpoint_name: Optional<string>;
-  display_name: Optional<string>;
-  http_method: Optional<HttpMethod>;
-  llm_key_id: Optional<string>;
-  input_schema: Optional<JsonSchema>;
-  output_schema: Optional<JsonSchema>;
-  instructions: Optional<string>;
-  context: Optional<string>;
-  is_active: Optional<boolean>;
+  endpoint_name?: Optional<string>;
+  display_name?: Optional<string>;
+  http_method?: Optional<HttpMethod>;
+  llm_key_id?: Optional<string>;
+  input_schema?: Optional<JsonSchema>;
+  output_schema?: Optional<JsonSchema>;
+  instructions?: Optional<string>;
+  context?: Optional<string>;
+  is_active?: Optional<boolean>;
+  ip_allowlist?: Optional<string[]>;
 }
 
 // =============================================================================
@@ -308,6 +314,26 @@ export interface AiPromptResponse {
 }
 
 // =============================================================================
+// API Key Types
+// =============================================================================
+
+/** Response when refreshing/generating a project API key */
+export interface RefreshApiKeyResponse {
+  /** Full API key (only returned on generation/refresh) */
+  api_key: string;
+  /** Key prefix for display (e.g., "sk_live_ab...") */
+  api_key_prefix: string;
+  /** When the key was created/refreshed */
+  api_key_created_at: string;
+}
+
+/** Response when fetching the full API key */
+export interface GetApiKeyResponse {
+  /** Full decrypted API key */
+  api_key: string;
+}
+
+// =============================================================================
 // ApiHelper Types
 // =============================================================================
 
@@ -387,6 +413,10 @@ export type AnalyticsApiResponse = BaseResponse<AnalyticsResponse>;
 // AI execution responses
 export type AiExecutionApiResponse = BaseResponse<AiExecutionResponse>;
 export type AiPromptApiResponse = BaseResponse<AiPromptResponse>;
+
+// API Key responses
+export type RefreshApiKeyApiResponse = BaseResponse<RefreshApiKeyResponse>;
+export type GetApiKeyApiResponse = BaseResponse<GetApiKeyResponse>;
 
 // Health check response
 export type HealthCheckResponse = BaseResponse<HealthCheckData>;
