@@ -51,7 +51,7 @@ export interface JsonSchema {
 // =============================================================================
 
 export interface User {
-  uuid: string;
+  id: string;
   firebase_uid: string;
   email: string | null;
   display_name: string | null;
@@ -131,7 +131,7 @@ export interface UsageAnalytics {
 }
 
 export interface UserSettings {
-  uuid: string | null;
+  id: string | null;
   user_id: string;
   organization_name: string | null;
   organization_path: string;
