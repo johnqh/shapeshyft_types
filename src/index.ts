@@ -75,7 +75,7 @@ export interface LlmApiKey {
 /** Safe version of LlmApiKey without sensitive data (for API responses) */
 export interface LlmApiKeySafe {
   uuid: string;
-  user_id: string;
+  entity_id: string;
   key_name: string;
   provider: LlmProvider;
   has_api_key: boolean;
@@ -87,7 +87,7 @@ export interface LlmApiKeySafe {
 
 export interface Project {
   uuid: string;
-  user_id: string;
+  entity_id: string;
   project_name: string;
   display_name: string;
   description: string | null;
