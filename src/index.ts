@@ -61,7 +61,7 @@ export interface User {
 
 export interface LlmApiKey {
   uuid: string;
-  user_id: string;
+  entity_id: string;
   key_name: string;
   provider: LlmProvider;
   encrypted_api_key: string | null;
@@ -135,6 +135,7 @@ export interface UserSettings {
   user_id: string;
   organization_name: string | null;
   organization_path: string;
+  /** Computed field (not stored in DB): true if settings are auto-generated defaults */
   is_default: boolean;
   created_at: Date | null;
   updated_at: Date | null;

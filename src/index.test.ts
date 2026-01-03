@@ -1,5 +1,30 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { successResponse, errorResponse } from './index';
+import {
+  successResponse,
+  errorResponse,
+  type LlmProvider,
+  type HttpMethod,
+  type JsonSchema,
+  type User,
+  type LlmApiKey,
+  type LlmApiKeySafe,
+  type Project,
+  type Endpoint,
+  type UsageAnalytics,
+  type UserSettings,
+  type UsageAggregate,
+  type UsageByEndpoint,
+  type AnalyticsResponse,
+  type LlmRequest,
+  type LlmResponse,
+  type AiExecutionRequest,
+  type AiExecutionResponse,
+  type PromptInput,
+  type ApiHelperRequestInput,
+  type ApiHelperRequestOutput,
+  type RefreshApiKeyResponse,
+  type HealthCheckData,
+} from './index';
 
 describe('shapeshyft_types', () => {
   describe('successResponse', () => {
@@ -113,15 +138,9 @@ describe('shapeshyft_types', () => {
     });
   });
 
-  describe('type exports', () => {
-    it('should export LlmProvider type values', () => {
-      // Type assertion tests - these validate the type definitions
-      const providers: Array<'openai' | 'gemini' | 'anthropic' | 'llm_server'> = [
-        'openai',
-        'gemini',
-        'anthropic',
-        'llm_server',
-      ];
+  describe('enum type values', () => {
+    it('should support all LlmProvider values', () => {
+      const providers: LlmProvider[] = ['openai', 'gemini', 'anthropic', 'llm_server'];
 
       expect(providers).toHaveLength(4);
       expect(providers).toContain('openai');
@@ -130,12 +149,563 @@ describe('shapeshyft_types', () => {
       expect(providers).toContain('llm_server');
     });
 
-    it('should export HttpMethod type values', () => {
-      const methods: Array<'GET' | 'POST'> = ['GET', 'POST'];
+    it('should support all HttpMethod values', () => {
+      const methods: HttpMethod[] = ['GET', 'POST'];
 
       expect(methods).toHaveLength(2);
       expect(methods).toContain('GET');
       expect(methods).toContain('POST');
+    });
+  });
+
+  describe('JsonSchema type', () => {
+    it('should support basic object schema', () => {
+      const schema: JsonSchema = {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          age: { type: 'number' },
+        },
+        required: ['name'],
+      };
+
+      expect(schema.type).toBe('object');
+      expect(schema.properties?.name?.type).toBe('string');
+      expect(schema.required).toContain('name');
+    });
+
+    it('should support array schema', () => {
+      const schema: JsonSchema = {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+      };
+
+      expect(schema.type).toBe('array');
+      expect(schema.items?.type).toBe('string');
+    });
+
+    it('should support enum values', () => {
+      const schema: JsonSchema = {
+        type: 'string',
+        enum: ['red', 'green', 'blue'],
+      };
+
+      expect(schema.enum).toEqual(['red', 'green', 'blue']);
+    });
+
+    it('should support validation constraints', () => {
+      const schema: JsonSchema = {
+        type: 'string',
+        minLength: 1,
+        maxLength: 100,
+        pattern: '^[a-z]+$',
+      };
+
+      expect(schema.minLength).toBe(1);
+      expect(schema.maxLength).toBe(100);
+      expect(schema.pattern).toBe('^[a-z]+$');
+    });
+
+    it('should support numeric constraints', () => {
+      const schema: JsonSchema = {
+        type: 'number',
+        minimum: 0,
+        maximum: 100,
+      };
+
+      expect(schema.minimum).toBe(0);
+      expect(schema.maximum).toBe(100);
+    });
+
+    it('should support nested schemas', () => {
+      const schema: JsonSchema = {
+        type: 'object',
+        properties: {
+          address: {
+            type: 'object',
+            properties: {
+              street: { type: 'string' },
+              city: { type: 'string' },
+            },
+          },
+        },
+      };
+
+      expect(schema.properties?.address?.properties?.street?.type).toBe('string');
+    });
+
+    it('should support additionalProperties', () => {
+      const schema: JsonSchema = {
+        type: 'object',
+        additionalProperties: false,
+      };
+
+      expect(schema.additionalProperties).toBe(false);
+    });
+  });
+
+  describe('entity types', () => {
+    it('should create valid User object', () => {
+      const user: User = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        firebase_uid: 'firebase-uid-123',
+        email: 'test@example.com',
+        display_name: 'Test User',
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      expect(user.id).toBeDefined();
+      expect(user.firebase_uid).toBe('firebase-uid-123');
+      expect(user.email).toBe('test@example.com');
+    });
+
+    it('should allow nullable User fields', () => {
+      const user: User = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        firebase_uid: 'firebase-uid-123',
+        email: null,
+        display_name: null,
+        created_at: null,
+        updated_at: null,
+      };
+
+      expect(user.email).toBeNull();
+      expect(user.display_name).toBeNull();
+    });
+
+    it('should create valid LlmApiKey object', () => {
+      const key: LlmApiKey = {
+        uuid: '123e4567-e89b-12d3-a456-426614174000',
+        entity_id: '123e4567-e89b-12d3-a456-426614174001',
+        key_name: 'My OpenAI Key',
+        provider: 'openai',
+        encrypted_api_key: 'encrypted-key-data',
+        endpoint_url: null,
+        encryption_iv: 'iv-data',
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      expect(key.entity_id).toBeDefined();
+      expect(key.provider).toBe('openai');
+      expect(key.is_active).toBe(true);
+    });
+
+    it('should create valid LlmApiKeySafe object (no sensitive data)', () => {
+      const safeKey: LlmApiKeySafe = {
+        uuid: '123e4567-e89b-12d3-a456-426614174000',
+        entity_id: '123e4567-e89b-12d3-a456-426614174001',
+        key_name: 'My OpenAI Key',
+        provider: 'openai',
+        has_api_key: true,
+        endpoint_url: null,
+        is_active: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      expect(safeKey.has_api_key).toBe(true);
+      expect(safeKey).not.toHaveProperty('encrypted_api_key');
+      expect(safeKey).not.toHaveProperty('encryption_iv');
+    });
+
+    it('should create valid Project object', () => {
+      const project: Project = {
+        uuid: '123e4567-e89b-12d3-a456-426614174000',
+        entity_id: '123e4567-e89b-12d3-a456-426614174001',
+        project_name: 'my-project',
+        display_name: 'My Project',
+        description: 'A test project',
+        is_active: true,
+        api_key_prefix: 'sk_live_ab',
+        api_key_created_at: new Date(),
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      expect(project.entity_id).toBeDefined();
+      expect(project.project_name).toBe('my-project');
+      expect(project.is_active).toBe(true);
+    });
+
+    it('should create valid Endpoint object', () => {
+      const endpoint: Endpoint = {
+        uuid: '123e4567-e89b-12d3-a456-426614174000',
+        project_id: '123e4567-e89b-12d3-a456-426614174001',
+        endpoint_name: 'analyze-text',
+        display_name: 'Analyze Text',
+        http_method: 'POST',
+        llm_key_id: '123e4567-e89b-12d3-a456-426614174002',
+        input_schema: { type: 'object', properties: { text: { type: 'string' } } },
+        output_schema: { type: 'object', properties: { result: { type: 'string' } } },
+        instructions: 'Analyze the given text',
+        context: 'You are a text analyzer',
+        is_active: true,
+        ip_allowlist: ['192.168.1.1', '10.0.0.1'],
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      expect(endpoint.http_method).toBe('POST');
+      expect(endpoint.ip_allowlist).toHaveLength(2);
+      expect(endpoint.input_schema?.type).toBe('object');
+    });
+
+    it('should allow null ip_allowlist for unrestricted access', () => {
+      const endpoint: Endpoint = {
+        uuid: '123e4567-e89b-12d3-a456-426614174000',
+        project_id: '123e4567-e89b-12d3-a456-426614174001',
+        endpoint_name: 'public-endpoint',
+        display_name: 'Public Endpoint',
+        http_method: 'GET',
+        llm_key_id: '123e4567-e89b-12d3-a456-426614174002',
+        input_schema: null,
+        output_schema: null,
+        instructions: null,
+        context: null,
+        is_active: true,
+        ip_allowlist: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      expect(endpoint.ip_allowlist).toBeNull();
+    });
+
+    it('should create valid UsageAnalytics object', () => {
+      const analytics: UsageAnalytics = {
+        uuid: '123e4567-e89b-12d3-a456-426614174000',
+        endpoint_id: '123e4567-e89b-12d3-a456-426614174001',
+        timestamp: new Date(),
+        success: true,
+        error_message: null,
+        tokens_input: 100,
+        tokens_output: 50,
+        latency_ms: 500,
+        estimated_cost_cents: 10,
+        request_metadata: { user_agent: 'test-agent' },
+      };
+
+      expect(analytics.success).toBe(true);
+      expect(analytics.tokens_input).toBe(100);
+      expect(analytics.estimated_cost_cents).toBe(10);
+    });
+
+    it('should create valid UserSettings object with is_default flag', () => {
+      const settings: UserSettings = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        user_id: '123e4567-e89b-12d3-a456-426614174001',
+        organization_name: 'My Org',
+        organization_path: 'my_org',
+        is_default: false,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      expect(settings.is_default).toBe(false);
+      expect(settings.organization_path).toBe('my_org');
+    });
+
+    it('should support default UserSettings (not yet saved)', () => {
+      const defaultSettings: UserSettings = {
+        id: null,
+        user_id: '123e4567-e89b-12d3-a456-426614174001',
+        organization_name: null,
+        organization_path: 'abc12345',
+        is_default: true,
+        created_at: null,
+        updated_at: null,
+      };
+
+      expect(defaultSettings.is_default).toBe(true);
+      expect(defaultSettings.id).toBeNull();
+    });
+  });
+
+  describe('analytics aggregation types', () => {
+    it('should create valid UsageAggregate object', () => {
+      const aggregate: UsageAggregate = {
+        total_requests: 100,
+        successful_requests: 95,
+        failed_requests: 5,
+        total_tokens_input: 10000,
+        total_tokens_output: 5000,
+        total_estimated_cost_cents: 150,
+        average_latency_ms: 250,
+      };
+
+      expect(aggregate.total_requests).toBe(100);
+      expect(aggregate.successful_requests + aggregate.failed_requests).toBe(100);
+    });
+
+    it('should create valid UsageByEndpoint object', () => {
+      const byEndpoint: UsageByEndpoint = {
+        endpoint_id: '123e4567-e89b-12d3-a456-426614174000',
+        endpoint_name: 'analyze-text',
+        total_requests: 50,
+        successful_requests: 48,
+        failed_requests: 2,
+        total_tokens_input: 5000,
+        total_tokens_output: 2500,
+        total_estimated_cost_cents: 75,
+        average_latency_ms: 200,
+      };
+
+      expect(byEndpoint.endpoint_id).toBeDefined();
+      expect(byEndpoint.endpoint_name).toBe('analyze-text');
+    });
+
+    it('should create valid AnalyticsResponse object', () => {
+      const response: AnalyticsResponse = {
+        aggregate: {
+          total_requests: 100,
+          successful_requests: 95,
+          failed_requests: 5,
+          total_tokens_input: 10000,
+          total_tokens_output: 5000,
+          total_estimated_cost_cents: 150,
+          average_latency_ms: 250,
+        },
+        by_endpoint: [
+          {
+            endpoint_id: '123e4567-e89b-12d3-a456-426614174000',
+            endpoint_name: 'endpoint-1',
+            total_requests: 50,
+            successful_requests: 48,
+            failed_requests: 2,
+            total_tokens_input: 5000,
+            total_tokens_output: 2500,
+            total_estimated_cost_cents: 75,
+            average_latency_ms: 200,
+          },
+        ],
+      };
+
+      expect(response.aggregate.total_requests).toBe(100);
+      expect(response.by_endpoint).toHaveLength(1);
+    });
+  });
+
+  describe('LLM request/response types', () => {
+    it('should create valid LlmRequest object', () => {
+      const request: LlmRequest = {
+        prompt: 'Analyze this text',
+        system_prompt: 'You are a helpful assistant',
+        output_schema: { type: 'object' },
+        model: 'gpt-4o',
+        temperature: 0.7,
+        max_tokens: 1000,
+      };
+
+      expect(request.prompt).toBe('Analyze this text');
+      expect(request.temperature).toBe(0.7);
+    });
+
+    it('should create valid LlmResponse object', () => {
+      const response: LlmResponse = {
+        content: { result: 'Analysis complete' },
+        raw_response: '{"result": "Analysis complete"}',
+        usage: {
+          prompt_tokens: 100,
+          completion_tokens: 50,
+          total_tokens: 150,
+        },
+        model: 'gpt-4o',
+        provider: 'openai',
+      };
+
+      expect(response.usage.total_tokens).toBe(150);
+      expect(response.provider).toBe('openai');
+    });
+  });
+
+  describe('AI execution types', () => {
+    it('should create valid AiExecutionRequest object', () => {
+      const request: AiExecutionRequest = {
+        input: { text: 'Hello world' },
+      };
+
+      expect(request.input).toEqual({ text: 'Hello world' });
+    });
+
+    it('should create valid AiExecutionResponse object', () => {
+      const response: AiExecutionResponse = {
+        output: { sentiment: 'positive' },
+        usage: {
+          tokens_input: 10,
+          tokens_output: 5,
+          latency_ms: 200,
+          estimated_cost_cents: 1,
+        },
+      };
+
+      expect(response.output).toEqual({ sentiment: 'positive' });
+      expect(response.usage.latency_ms).toBe(200);
+    });
+  });
+
+  describe('ApiHelper types', () => {
+    it('should create valid PromptInput object', () => {
+      const input: PromptInput = {
+        inputData: { text: 'Sample text' },
+        outputSchema: { type: 'object' },
+        instructions: 'Process the text',
+        context: 'You are a processor',
+        provider: 'openai',
+      };
+
+      expect(input.provider).toBe('openai');
+      expect(input.instructions).toBe('Process the text');
+    });
+
+    it('should create valid ApiHelperRequestInput object', () => {
+      const input: ApiHelperRequestInput = {
+        prompt: 'Analyze this',
+        outputSchema: { type: 'object' },
+        provider: 'anthropic',
+        providerConfig: {
+          apiKey: 'sk-test',
+          model: 'claude-3-5-sonnet-20241022',
+        },
+        options: {
+          temperature: 0.5,
+          maxTokens: 500,
+        },
+      };
+
+      expect(input.provider).toBe('anthropic');
+      expect(input.providerConfig.model).toBe('claude-3-5-sonnet-20241022');
+    });
+
+    it('should create valid ApiHelperRequestOutput object', () => {
+      const output: ApiHelperRequestOutput = {
+        apiPayload: {
+          model: 'gpt-4o',
+          messages: [{ role: 'user', content: 'Hello' }],
+        },
+        endpointUrl: 'https://api.openai.com/v1/chat/completions',
+        provider: 'openai',
+      };
+
+      expect(output.endpointUrl).toContain('openai.com');
+      expect(output.provider).toBe('openai');
+    });
+  });
+
+  describe('API key types', () => {
+    it('should create valid RefreshApiKeyResponse object', () => {
+      const response: RefreshApiKeyResponse = {
+        api_key: 'shyft_test_abcdefghijklmnop1234567890',
+        api_key_prefix: 'shyft_test_ab...',
+        api_key_created_at: '2025-01-15T10:30:00.000Z',
+      };
+
+      expect(response.api_key).toContain('shyft_test_');
+      expect(response.api_key_prefix).toContain('...');
+    });
+  });
+
+  describe('health check types', () => {
+    it('should create valid HealthCheckData object', () => {
+      const health: HealthCheckData = {
+        name: 'shapeshyft_api',
+        version: '1.0.16',
+        status: 'healthy',
+      };
+
+      expect(health.name).toBe('shapeshyft_api');
+      expect(health.status).toBe('healthy');
+    });
+  });
+
+  describe('response with typed data', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date('2025-01-15T10:30:00.000Z'));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should create typed success response with Project', () => {
+      const project: Project = {
+        uuid: '123e4567-e89b-12d3-a456-426614174000',
+        entity_id: '123e4567-e89b-12d3-a456-426614174001',
+        project_name: 'test',
+        display_name: 'Test',
+        description: null,
+        is_active: true,
+        api_key_prefix: null,
+        api_key_created_at: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      const response = successResponse(project);
+
+      expect(response.success).toBe(true);
+      expect(response.data.project_name).toBe('test');
+      expect(response.data.entity_id).toBeDefined();
+    });
+
+    it('should create typed success response with array of LlmApiKeySafe', () => {
+      const keys: LlmApiKeySafe[] = [
+        {
+          uuid: '123e4567-e89b-12d3-a456-426614174000',
+          entity_id: '123e4567-e89b-12d3-a456-426614174001',
+          key_name: 'Key 1',
+          provider: 'openai',
+          has_api_key: true,
+          endpoint_url: null,
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          uuid: '123e4567-e89b-12d3-a456-426614174002',
+          entity_id: '123e4567-e89b-12d3-a456-426614174001',
+          key_name: 'Key 2',
+          provider: 'anthropic',
+          has_api_key: true,
+          endpoint_url: null,
+          is_active: true,
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      ];
+
+      const response = successResponse(keys);
+
+      expect(response.success).toBe(true);
+      expect(response.data).toHaveLength(2);
+      expect(response.data[0].provider).toBe('openai');
+      expect(response.data[1].provider).toBe('anthropic');
+    });
+
+    it('should create typed success response with AnalyticsResponse', () => {
+      const analytics: AnalyticsResponse = {
+        aggregate: {
+          total_requests: 0,
+          successful_requests: 0,
+          failed_requests: 0,
+          total_tokens_input: 0,
+          total_tokens_output: 0,
+          total_estimated_cost_cents: 0,
+          average_latency_ms: 0,
+        },
+        by_endpoint: [],
+      };
+
+      const response = successResponse(analytics);
+
+      expect(response.success).toBe(true);
+      expect(response.data.aggregate.total_requests).toBe(0);
+      expect(response.data.by_endpoint).toEqual([]);
     });
   });
 });
