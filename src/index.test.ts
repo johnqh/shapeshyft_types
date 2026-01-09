@@ -14,16 +14,31 @@ import {
   type UserSettings,
   type UsageAggregate,
   type UsageByEndpoint,
+  type UsageByDate,
   type AnalyticsResponse,
   type LlmRequest,
   type LlmResponse,
   type AiExecutionRequest,
   type AiExecutionResponse,
+  type AiPromptResponse,
   type PromptInput,
   type ApiHelperRequestInput,
   type ApiHelperRequestOutput,
   type RefreshApiKeyResponse,
+  type GetApiKeyResponse,
   type HealthCheckData,
+  type UserCreateRequest,
+  type UserUpdateRequest,
+  type UserSettingsUpdateRequest,
+  type LlmApiKeyCreateRequest,
+  type LlmApiKeyUpdateRequest,
+  type ProjectCreateRequest,
+  type ProjectUpdateRequest,
+  type EndpointCreateRequest,
+  type EndpointUpdateRequest,
+  type ProjectQueryParams,
+  type EndpointQueryParams,
+  type UsageAnalyticsQueryParams,
 } from './index';
 
 describe('shapeshyft_types', () => {
@@ -619,6 +634,263 @@ describe('shapeshyft_types', () => {
 
       expect(health.name).toBe('shapeshyft_api');
       expect(health.status).toBe('healthy');
+    });
+  });
+
+  describe('request body types', () => {
+    it('should create valid UserCreateRequest', () => {
+      const request: UserCreateRequest = {
+        firebase_uid: 'firebase-uid-123',
+        email: 'test@example.com',
+        display_name: 'Test User',
+      };
+
+      expect(request.firebase_uid).toBe('firebase-uid-123');
+      expect(request.email).toBe('test@example.com');
+    });
+
+    it('should allow undefined optional fields in UserCreateRequest', () => {
+      const request: UserCreateRequest = {
+        firebase_uid: 'firebase-uid-123',
+        email: undefined,
+        display_name: undefined,
+      };
+
+      expect(request.firebase_uid).toBeDefined();
+      expect(request.email).toBeUndefined();
+    });
+
+    it('should create valid UserUpdateRequest', () => {
+      const request: UserUpdateRequest = {
+        email: 'new@example.com',
+        display_name: 'New Name',
+      };
+
+      expect(request.email).toBe('new@example.com');
+      expect(request.display_name).toBe('New Name');
+    });
+
+    it('should allow partial UserUpdateRequest', () => {
+      const request: UserUpdateRequest = {
+        email: undefined,
+        display_name: 'Only Name',
+      };
+
+      expect(request.email).toBeUndefined();
+      expect(request.display_name).toBe('Only Name');
+    });
+
+    it('should create valid UserSettingsUpdateRequest', () => {
+      const request: UserSettingsUpdateRequest = {
+        organization_name: 'New Org',
+        organization_path: 'new_org',
+      };
+
+      expect(request.organization_name).toBe('New Org');
+      expect(request.organization_path).toBe('new_org');
+    });
+
+    it('should create valid LlmApiKeyCreateRequest', () => {
+      const request: LlmApiKeyCreateRequest = {
+        key_name: 'My API Key',
+        provider: 'openai',
+        api_key: 'sk-test-key',
+        endpoint_url: undefined,
+      };
+
+      expect(request.key_name).toBe('My API Key');
+      expect(request.provider).toBe('openai');
+      expect(request.api_key).toBe('sk-test-key');
+    });
+
+    it('should create valid LlmApiKeyCreateRequest for llm_server', () => {
+      const request: LlmApiKeyCreateRequest = {
+        key_name: 'Custom LLM Server',
+        provider: 'llm_server',
+        api_key: undefined,
+        endpoint_url: 'https://my-llm-server.com/v1',
+      };
+
+      expect(request.provider).toBe('llm_server');
+      expect(request.endpoint_url).toBe('https://my-llm-server.com/v1');
+    });
+
+    it('should create valid LlmApiKeyUpdateRequest', () => {
+      const request: LlmApiKeyUpdateRequest = {
+        key_name: 'Updated Key',
+        api_key: 'sk-new-key',
+        endpoint_url: undefined,
+        is_active: true,
+      };
+
+      expect(request.key_name).toBe('Updated Key');
+      expect(request.is_active).toBe(true);
+    });
+
+    it('should create valid ProjectCreateRequest', () => {
+      const request: ProjectCreateRequest = {
+        project_name: 'my-project',
+        display_name: 'My Project',
+        description: 'A test project',
+      };
+
+      expect(request.project_name).toBe('my-project');
+      expect(request.display_name).toBe('My Project');
+      expect(request.description).toBe('A test project');
+    });
+
+    it('should create valid ProjectUpdateRequest', () => {
+      const request: ProjectUpdateRequest = {
+        project_name: 'updated-project',
+        display_name: 'Updated Project',
+        description: undefined,
+        is_active: false,
+      };
+
+      expect(request.is_active).toBe(false);
+    });
+
+    it('should create valid EndpointCreateRequest', () => {
+      const request: EndpointCreateRequest = {
+        endpoint_name: 'analyze-text',
+        display_name: 'Analyze Text',
+        http_method: 'POST',
+        llm_key_id: '123e4567-e89b-12d3-a456-426614174000',
+        input_schema: { type: 'object', properties: { text: { type: 'string' } } },
+        output_schema: { type: 'object', properties: { result: { type: 'string' } } },
+        instructions: 'Analyze the text',
+        context: 'You are a text analyzer',
+      };
+
+      expect(request.endpoint_name).toBe('analyze-text');
+      expect(request.http_method).toBe('POST');
+      expect(request.llm_key_id).toBeDefined();
+    });
+
+    it('should create minimal EndpointCreateRequest', () => {
+      const request: EndpointCreateRequest = {
+        endpoint_name: 'simple-endpoint',
+        display_name: 'Simple Endpoint',
+        http_method: undefined,
+        llm_key_id: '123e4567-e89b-12d3-a456-426614174000',
+        input_schema: undefined,
+        output_schema: undefined,
+        instructions: undefined,
+        context: undefined,
+      };
+
+      expect(request.endpoint_name).toBe('simple-endpoint');
+      expect(request.http_method).toBeUndefined();
+    });
+
+    it('should create valid EndpointUpdateRequest', () => {
+      const request: EndpointUpdateRequest = {
+        endpoint_name: 'updated-endpoint',
+        display_name: 'Updated Endpoint',
+        http_method: 'GET',
+        is_active: true,
+        ip_allowlist: ['192.168.1.1', '10.0.0.1'],
+      };
+
+      expect(request.http_method).toBe('GET');
+      expect(request.ip_allowlist).toHaveLength(2);
+    });
+
+    it('should allow clearing ip_allowlist in EndpointUpdateRequest', () => {
+      const request: EndpointUpdateRequest = {
+        ip_allowlist: null,
+      };
+
+      expect(request.ip_allowlist).toBeNull();
+    });
+  });
+
+  describe('query parameter types', () => {
+    it('should create valid ProjectQueryParams', () => {
+      const params: ProjectQueryParams = {
+        is_active: 'true',
+      };
+
+      expect(params.is_active).toBe('true');
+    });
+
+    it('should allow undefined ProjectQueryParams fields', () => {
+      const params: ProjectQueryParams = {
+        is_active: undefined,
+      };
+
+      expect(params.is_active).toBeUndefined();
+    });
+
+    it('should create valid EndpointQueryParams', () => {
+      const params: EndpointQueryParams = {
+        is_active: 'false',
+      };
+
+      expect(params.is_active).toBe('false');
+    });
+
+    it('should create valid UsageAnalyticsQueryParams with all fields', () => {
+      const params: UsageAnalyticsQueryParams = {
+        endpoint_id: '123e4567-e89b-12d3-a456-426614174000',
+        project_id: '123e4567-e89b-12d3-a456-426614174001',
+        start_date: '2025-01-01',
+        end_date: '2025-01-31',
+        success: 'true',
+      };
+
+      expect(params.endpoint_id).toBeDefined();
+      expect(params.project_id).toBeDefined();
+      expect(params.start_date).toBe('2025-01-01');
+      expect(params.end_date).toBe('2025-01-31');
+      expect(params.success).toBe('true');
+    });
+
+    it('should allow partial UsageAnalyticsQueryParams', () => {
+      const params: UsageAnalyticsQueryParams = {
+        endpoint_id: undefined,
+        project_id: '123e4567-e89b-12d3-a456-426614174001',
+        start_date: undefined,
+        end_date: undefined,
+        success: undefined,
+      };
+
+      expect(params.project_id).toBeDefined();
+      expect(params.start_date).toBeUndefined();
+    });
+  });
+
+  describe('additional response types', () => {
+    it('should create valid UsageByDate object', () => {
+      const byDate: UsageByDate = {
+        date: '2025-01-15',
+        total_requests: 100,
+        successful_requests: 95,
+        failed_requests: 5,
+        total_tokens_input: 10000,
+        total_tokens_output: 5000,
+        total_estimated_cost_cents: 150,
+        average_latency_ms: 250,
+      };
+
+      expect(byDate.date).toBe('2025-01-15');
+      expect(byDate.total_requests).toBe(100);
+    });
+
+    it('should create valid AiPromptResponse object', () => {
+      const response: AiPromptResponse = {
+        prompt: 'Given the following input:\n{"text": "Hello"}\n\nAnalyze the sentiment.',
+      };
+
+      expect(response.prompt).toContain('sentiment');
+    });
+
+    it('should create valid GetApiKeyResponse object', () => {
+      const response: GetApiKeyResponse = {
+        api_key: 'shyft_live_abcdefghijklmnop1234567890abcdef',
+      };
+
+      expect(response.api_key).toContain('shyft_live_');
     });
   });
 

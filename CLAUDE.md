@@ -7,13 +7,16 @@ TypeScript type definitions for ShapeShyft API - LLM structured output platform.
 ## Tech Stack
 
 - **Language**: TypeScript
+- **Runtime**: Bun
 - **Build**: TypeScript compiler (dual ESM/CJS)
+- **Test**: Vitest
 
 ## Project Structure
 
 ```
 src/
-└── index.ts          # All type definitions
+├── index.ts          # All type definitions and response helpers
+└── index.test.ts     # Type tests
 dist/
 ├── index.js          # ESM build
 ├── index.cjs         # CommonJS build
@@ -27,6 +30,7 @@ bun run build        # Build ESM + CJS
 bun run build:esm    # Build ESM only
 bun run build:cjs    # Build CJS only
 bun run clean        # Remove dist/
+bun run test         # Run Vitest
 bun run typecheck    # TypeScript check
 bun run lint         # Run ESLint
 bun run format       # Format with Prettier
@@ -41,25 +45,47 @@ bun run verify       # Typecheck + lint + build
 
 ### Entity Types (Database Models)
 - `User` - User account
-- `LlmApiKey` / `LlmApiKeySafe` - LLM API keys
+- `LlmApiKey` / `LlmApiKeySafe` - LLM API keys (safe version excludes encrypted data)
 - `Project` - User projects
 - `Endpoint` - AI endpoint configurations
 - `UsageAnalytics` - Request tracking
+- `UserSettings` - User preferences
 
-### Request/Response Types
-- `CreateKeyRequest`, `UpdateKeyRequest`
-- `CreateProjectRequest`, `UpdateProjectRequest`
-- `CreateEndpointRequest`, `UpdateEndpointRequest`
-- `ExecuteRequest`, `ExecuteResponse`
+### Request Types
+- `UserCreateRequest`, `UserUpdateRequest`
+- `LlmApiKeyCreateRequest`, `LlmApiKeyUpdateRequest`
+- `ProjectCreateRequest`, `ProjectUpdateRequest`
+- `EndpointCreateRequest`, `EndpointUpdateRequest`
+- `AiExecutionRequest`
+
+### Response Types
+- `AiExecutionResponse`, `AiPromptResponse`
+- `AnalyticsResponse`
+- `RefreshApiKeyResponse`, `GetApiKeyResponse`
+- `HealthCheckData`
+
+### Query Parameter Types
+- `ProjectQueryParams`
+- `EndpointQueryParams`
+- `UsageAnalyticsQueryParams`
 
 ### Utility Types
 - `JsonSchema` - JSON Schema definition
-- `ApiResponse<T>` - Standard API response wrapper
-- `PaginatedResponse<T>` - Paginated list response
+- `ApiResponse<T>` - Standard API response wrapper (re-exported)
+- `PaginatedResponse<T>` - Paginated list response (re-exported)
 
 ### Response Helpers
-- `successResponse<T>(data)` - Create success response
-- `errorResponse(message)` - Create error response
+```typescript
+import { successResponse, errorResponse } from '@sudobility/shapeshyft_types';
+
+// Create success response
+const response = successResponse({ id: '123', name: 'Test' });
+// { success: true, data: { id: '123', name: 'Test' }, timestamp: '...' }
+
+// Create error response
+const error = errorResponse('Something went wrong');
+// { success: false, error: 'Something went wrong', timestamp: '...' }
+```
 
 ## Usage
 
@@ -69,8 +95,8 @@ import type {
   Project,
   Endpoint,
   LlmProvider,
-  ExecuteRequest,
-  ExecuteResponse
+  AiExecutionRequest,
+  AiExecutionResponse,
 } from '@sudobility/shapeshyft_types';
 
 import { successResponse, errorResponse } from '@sudobility/shapeshyft_types';
@@ -83,7 +109,7 @@ import { successResponse, errorResponse } from '@sudobility/shapeshyft_types';
 ## Publishing
 
 ```bash
-bun run prepublishOnly  # Clean + verify
+bun run verify          # All checks
 npm publish             # Publish to npm (public)
 ```
 
@@ -101,7 +127,7 @@ Supports both ESM and CommonJS:
 
 ## Package Hierarchy
 
-This is the base types package used by all other packages:
+This is the base types package used by all other ShapeShyft packages:
 
 ```
 shapeshyft_types (this package)
@@ -112,4 +138,12 @@ shapeshyft_lib (business logic)
     ↑
 shapeshyft_app (frontend)
 shapeshyft_api (backend)
+```
+
+## Testing
+
+Tests verify type assignability and response helpers:
+
+```bash
+bun run test         # Run tests
 ```
