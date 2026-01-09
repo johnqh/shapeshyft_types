@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/shapeshyft_types",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "TypeScript types for ShapeShyft API - LLM structured output platform",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -24,8 +24,8 @@
     "lint:fix": "bunx eslint src/ --fix",
     "format": "bunx prettier --write \"src/**/*.ts\"",
     "format:check": "bunx prettier --check \"src/**/*.ts\"",
-    "test": "bunx vitest",
-    "test:run": "bunx vitest run",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "verify": "bun run typecheck && bun run lint && bun run build",
     "prepublishOnly": "bun run clean && bun run verify"
   },
