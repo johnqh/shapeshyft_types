@@ -281,12 +281,15 @@ export const COST_PER_MILLION_TOKENS: Record<string, ModelPricing> = {
   default: { input: 100, output: 300 },
 };
 
+/** Default pricing for unknown models */
+const DEFAULT_MODEL_PRICING: ModelPricing = { input: 100, output: 300 };
+
 /**
  * Get pricing for a specific model
  * Returns default pricing if model is not found
  */
 export function getModelPricing(model: string): ModelPricing {
-  return COST_PER_MILLION_TOKENS[model] ?? COST_PER_MILLION_TOKENS['default']!;
+  return COST_PER_MILLION_TOKENS[model] ?? DEFAULT_MODEL_PRICING;
 }
 
 /**
