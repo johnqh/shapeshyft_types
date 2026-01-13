@@ -1,6 +1,6 @@
 {
   "name": "@sudobility/shapeshyft_types",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "TypeScript types for ShapeShyft API - LLM structured output platform",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

@@ -307,6 +307,29 @@ export const PROVIDER_ALLOWS_CUSTOM_MODEL: Record<LlmProvider, boolean> = {
 // =============================================================================
 
 /**
+ * Supported media input formats for different providers/models.
+ * - url: HTTP/HTTPS URLs to media files
+ * - base64: Base64-encoded binary data (data URLs)
+ * - gcs: Google Cloud Storage URIs (gs://bucket/path)
+ * - s3: AWS S3 URIs (s3://bucket/key)
+ * - file: Direct file upload (multipart form data)
+ */
+export type MediaInputFormat = 'url' | 'base64' | 'gcs' | 's3' | 'file';
+
+/**
+ * Media format support configuration for a model.
+ * Specifies which input formats are supported for each media type.
+ */
+export interface MediaFormatSupport {
+  /** Supported formats for image input */
+  imageFormats?: MediaInputFormat[];
+  /** Supported formats for audio input */
+  audioFormats?: MediaInputFormat[];
+  /** Supported formats for video input */
+  videoFormats?: MediaInputFormat[];
+}
+
+/**
  * Capabilities for a model's input and output modalities.
  * undefined = unknown (user's responsibility to verify)
  * true = supported
@@ -322,6 +345,9 @@ export interface ModelCapabilities {
   imageOutput?: boolean;    // Can generate images
   audioOutput?: boolean;    // Can generate audio
   videoOutput?: boolean;    // Can generate video
+
+  // Media format support (what formats the model accepts)
+  mediaFormats?: MediaFormatSupport;
 }
 
 /**
@@ -332,80 +358,280 @@ export interface ModelCapabilities {
 export const MODEL_CAPABILITIES: Record<string, ModelCapabilities> = {
   // ===========================================================================
   // OpenAI (January 2026)
+  // OpenAI supports URL and base64 for images
   // ===========================================================================
   // GPT-4.1 family
-  'gpt-4.1': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'gpt-4.1-mini': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'gpt-4.1-nano': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'gpt-4.1': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'gpt-4.1-mini': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'gpt-4.1-nano': {
+    visionInput: false, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+  },
   // GPT-4o (omni - multimodal)
-  'gpt-4o': { visionInput: true, audioInput: true, videoInput: false, imageOutput: false, audioOutput: true, videoOutput: false },
-  'gpt-4o-mini': { visionInput: true, audioInput: true, videoInput: false, imageOutput: false, audioOutput: true, videoOutput: false },
+  'gpt-4o': {
+    visionInput: true, audioInput: true, videoInput: false,
+    imageOutput: false, audioOutput: true, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'], audioFormats: ['base64', 'file'] },
+  },
+  'gpt-4o-mini': {
+    visionInput: true, audioInput: true, videoInput: false,
+    imageOutput: false, audioOutput: true, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'], audioFormats: ['base64', 'file'] },
+  },
   // Reasoning models (o-series)
-  'o3': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'o3-pro': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'o4-mini': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'o3': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'o3-pro': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'o4-mini': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
   // Legacy
-  'gpt-4-turbo': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'o1': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'gpt-4-turbo': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'o1': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
 
   // ===========================================================================
   // Anthropic (January 2026)
+  // Anthropic supports URL and base64 for images
   // ===========================================================================
   // Claude 4.5
-  'claude-opus-4-5-20251124': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'claude-sonnet-4-5-20251124': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'claude-opus-4-5-20251124': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'claude-sonnet-4-5-20251124': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
   // Claude 4.1
-  'claude-opus-4-1-20250805': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'claude-opus-4-1-20250805': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
   // Claude 4
-  'claude-sonnet-4-20250514': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'claude-opus-4-20250514': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'claude-sonnet-4-20250514': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'claude-opus-4-20250514': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
   // Claude 3.5
-  'claude-3-5-haiku-20241022': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'claude-3-5-haiku-20241022': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
 
   // ===========================================================================
   // Google Gemini (January 2026)
+  // Gemini supports URL, base64, and GCS URIs for all media types
   // ===========================================================================
   // Gemini 3 (latest)
-  'gemini-3-pro-preview': { visionInput: true, audioInput: true, videoInput: true, imageOutput: false, audioOutput: false, videoOutput: false },
-  'gemini-3-flash-preview': { visionInput: true, audioInput: true, videoInput: true, imageOutput: false, audioOutput: false, videoOutput: false },
-  'gemini-3-pro-image-preview': { visionInput: true, audioInput: false, videoInput: false, imageOutput: true, audioOutput: false, videoOutput: false },
+  'gemini-3-pro-preview': {
+    visionInput: true, audioInput: true, videoInput: true,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: {
+      imageFormats: ['url', 'base64', 'gcs'],
+      audioFormats: ['url', 'base64', 'gcs'],
+      videoFormats: ['url', 'gcs'],
+    },
+  },
+  'gemini-3-flash-preview': {
+    visionInput: true, audioInput: true, videoInput: true,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: {
+      imageFormats: ['url', 'base64', 'gcs'],
+      audioFormats: ['url', 'base64', 'gcs'],
+      videoFormats: ['url', 'gcs'],
+    },
+  },
+  'gemini-3-pro-image-preview': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: true, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64', 'gcs'] },
+  },
   // Gemini 2.5
-  'gemini-2.5-pro': { visionInput: true, audioInput: true, videoInput: true, imageOutput: false, audioOutput: false, videoOutput: false },
-  'gemini-2.5-flash': { visionInput: true, audioInput: true, videoInput: true, imageOutput: false, audioOutput: false, videoOutput: false },
-  'gemini-2.5-flash-lite': { visionInput: true, audioInput: true, videoInput: true, imageOutput: false, audioOutput: false, videoOutput: false },
-  'gemini-2.5-flash-image': { visionInput: true, audioInput: false, videoInput: false, imageOutput: true, audioOutput: false, videoOutput: false },
-  'gemini-2.5-flash-native-audio-preview': { visionInput: true, audioInput: true, videoInput: true, imageOutput: false, audioOutput: true, videoOutput: false },
+  'gemini-2.5-pro': {
+    visionInput: true, audioInput: true, videoInput: true,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: {
+      imageFormats: ['url', 'base64', 'gcs'],
+      audioFormats: ['url', 'base64', 'gcs'],
+      videoFormats: ['url', 'gcs'],
+    },
+  },
+  'gemini-2.5-flash': {
+    visionInput: true, audioInput: true, videoInput: true,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: {
+      imageFormats: ['url', 'base64', 'gcs'],
+      audioFormats: ['url', 'base64', 'gcs'],
+      videoFormats: ['url', 'gcs'],
+    },
+  },
+  'gemini-2.5-flash-lite': {
+    visionInput: true, audioInput: true, videoInput: true,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: {
+      imageFormats: ['url', 'base64', 'gcs'],
+      audioFormats: ['url', 'base64', 'gcs'],
+      videoFormats: ['url', 'gcs'],
+    },
+  },
+  'gemini-2.5-flash-image': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: true, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64', 'gcs'] },
+  },
+  'gemini-2.5-flash-native-audio-preview': {
+    visionInput: true, audioInput: true, videoInput: true,
+    imageOutput: false, audioOutput: true, videoOutput: false,
+    mediaFormats: {
+      imageFormats: ['url', 'base64', 'gcs'],
+      audioFormats: ['url', 'base64', 'gcs'],
+      videoFormats: ['url', 'gcs'],
+    },
+  },
   // Gemini 2.0
-  'gemini-2.0-flash': { visionInput: true, audioInput: true, videoInput: true, imageOutput: true, audioOutput: true, videoOutput: false },
-  'gemini-2.0-flash-lite': { visionInput: true, audioInput: true, videoInput: true, imageOutput: false, audioOutput: false, videoOutput: false },
+  'gemini-2.0-flash': {
+    visionInput: true, audioInput: true, videoInput: true,
+    imageOutput: true, audioOutput: true, videoOutput: false,
+    mediaFormats: {
+      imageFormats: ['url', 'base64', 'gcs'],
+      audioFormats: ['url', 'base64', 'gcs'],
+      videoFormats: ['url', 'gcs'],
+    },
+  },
+  'gemini-2.0-flash-lite': {
+    visionInput: true, audioInput: true, videoInput: true,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: {
+      imageFormats: ['url', 'base64', 'gcs'],
+      audioFormats: ['url', 'base64', 'gcs'],
+      videoFormats: ['url', 'gcs'],
+    },
+  },
 
   // ===========================================================================
   // Mistral AI (January 2026)
+  // Mistral supports URL and base64 for images
   // ===========================================================================
   // Large models (Mistral Large 3 has vision)
-  'mistral-large-2512': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'mistral-large-latest': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'mistral-large-2512': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'mistral-large-latest': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
   // Medium models (vision capable)
-  'mistral-medium-3.1': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'mistral-medium-latest': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'mistral-medium-3.1': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'mistral-medium-latest': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
   // Small models (vision capable)
-  'mistral-small-3.2': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'mistral-small-latest': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'mistral-small-3.2': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'mistral-small-latest': {
+    visionInput: false, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+  },
   // Ministral (vision capable)
-  'ministral-3b-2512': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'ministral-8b-2512': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'ministral-14b-2512': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'ministral-3b-2512': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'ministral-8b-2512': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'ministral-14b-2512': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
   // Code models
-  'codestral-2501': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'codestral-latest': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'codestral-2501': {
+    visionInput: false, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+  },
+  'codestral-latest': {
+    visionInput: false, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+  },
   // Vision models (Pixtral)
-  'pixtral-large-2411': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'pixtral-large-latest': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'pixtral-large-2411': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'pixtral-large-latest': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
   // Audio models (Voxtral)
-  'voxtral-small': { visionInput: false, audioInput: true, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'voxtral-mini': { visionInput: false, audioInput: true, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'voxtral-small': {
+    visionInput: false, audioInput: true, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { audioFormats: ['base64', 'file'] },
+  },
+  'voxtral-mini': {
+    visionInput: false, audioInput: true, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { audioFormats: ['base64', 'file'] },
+  },
   // Document AI
-  'mistral-ocr-2512': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'mistral-ocr-2512': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
 
   // ===========================================================================
   // Cohere (January 2026)
@@ -413,7 +639,11 @@ export const MODEL_CAPABILITIES: Record<string, ModelCapabilities> = {
   // Command A family
   'command-a-03-2025': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
   'command-a-reasoning': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'command-a-vision': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'command-a-vision': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
+  },
   // Command R family
   'command-r-plus-08-2024': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
   'command-r-08-2024': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
@@ -429,20 +659,52 @@ export const MODEL_CAPABILITIES: Record<string, ModelCapabilities> = {
   'openai/gpt-oss-20b': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
   'groq/compound': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
   'groq/compound-mini': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'meta-llama/llama-guard-4-12b': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'whisper-large-v3': { visionInput: false, audioInput: true, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'whisper-large-v3-turbo': { visionInput: false, audioInput: true, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'meta-llama/llama-guard-4-12b': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
+  },
+  'whisper-large-v3': {
+    visionInput: false, audioInput: true, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { audioFormats: ['file'] },
+  },
+  'whisper-large-v3-turbo': {
+    visionInput: false, audioInput: true, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { audioFormats: ['file'] },
+  },
 
   // ===========================================================================
   // xAI Grok (January 2026)
   // ===========================================================================
-  'grok-4': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'grok-4.1-fast': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'grok-3': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'grok-4': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'grok-4.1-fast': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
+  'grok-3': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
   'grok-3-mini': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'grok-3-vision': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'grok-3-vision': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
   'grok-2': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
-  'grok-2-vision': { visionInput: true, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'grok-2-vision': {
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['url', 'base64'] },
+  },
 
   // ===========================================================================
   // DeepSeek (January 2026 - V3.2)
@@ -461,78 +723,52 @@ export const MODEL_CAPABILITIES: Record<string, ModelCapabilities> = {
 
   // ===========================================================================
   // LM Studio / Local Models (common vision models)
+  // Local models typically only support base64 as they don't have internet access
   // ===========================================================================
   'llava-v1.6-mistral-7b': {
-    visionInput: true,
-    audioInput: false,
-    videoInput: false,
-    imageOutput: false,
-    audioOutput: false,
-    videoOutput: false,
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
   },
   'llava-v1.6-vicuna-13b': {
-    visionInput: true,
-    audioInput: false,
-    videoInput: false,
-    imageOutput: false,
-    audioOutput: false,
-    videoOutput: false,
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
   },
   'qwen2-vl-7b-instruct': {
-    visionInput: true,
-    audioInput: false,
-    videoInput: false,
-    imageOutput: false,
-    audioOutput: false,
-    videoOutput: false,
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
   },
   'phi-3-vision-128k-instruct': {
-    visionInput: true,
-    audioInput: false,
-    videoInput: false,
-    imageOutput: false,
-    audioOutput: false,
-    videoOutput: false,
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
   },
   'minicpm-v-2_6': {
-    visionInput: true,
-    audioInput: false,
-    videoInput: false,
-    imageOutput: false,
-    audioOutput: false,
-    videoOutput: false,
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
   },
   'moondream2': {
-    visionInput: true,
-    audioInput: false,
-    videoInput: false,
-    imageOutput: false,
-    audioOutput: false,
-    videoOutput: false,
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
   },
   'internvl2-8b': {
-    visionInput: true,
-    audioInput: false,
-    videoInput: false,
-    imageOutput: false,
-    audioOutput: false,
-    videoOutput: false,
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
   },
   'llama-3.2-11b-vision': {
-    visionInput: true,
-    audioInput: false,
-    videoInput: false,
-    imageOutput: false,
-    audioOutput: false,
-    videoOutput: false,
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
   },
   'pixtral-12b': {
-    visionInput: true,
-    audioInput: false,
-    videoInput: false,
-    imageOutput: false,
-    audioOutput: false,
-    videoOutput: false,
+    visionInput: true, audioInput: false, videoInput: false,
+    imageOutput: false, audioOutput: false, videoOutput: false,
+    mediaFormats: { imageFormats: ['base64'] },
   },
 };
 
@@ -576,6 +812,69 @@ export function hasOutputCapability(
     case 'audio': return caps.audioOutput;
     case 'video': return caps.videoOutput;
   }
+}
+
+/**
+ * Get supported media input formats for a specific media type.
+ * Returns the list of supported formats, or undefined if model is unknown.
+ * Returns empty array if model is known but doesn't support that media type.
+ */
+export function getMediaFormats(
+  model: string,
+  mediaType: 'image' | 'audio' | 'video'
+): MediaInputFormat[] | undefined {
+  const caps = MODEL_CAPABILITIES[model];
+  if (!caps) return undefined;
+  if (!caps.mediaFormats) return [];
+
+  switch (mediaType) {
+    case 'image': return caps.mediaFormats.imageFormats ?? [];
+    case 'audio': return caps.mediaFormats.audioFormats ?? [];
+    case 'video': return caps.mediaFormats.videoFormats ?? [];
+  }
+}
+
+/**
+ * Check if a model supports a specific media input format.
+ * Returns undefined if model is unknown, true/false if known.
+ */
+export function supportsMediaFormat(
+  model: string,
+  mediaType: 'image' | 'audio' | 'video',
+  format: MediaInputFormat
+): boolean | undefined {
+  const formats = getMediaFormats(model, mediaType);
+  if (formats === undefined) return undefined;
+  return formats.includes(format);
+}
+
+/**
+ * Get the preferred/default media input format for a model.
+ * Returns 'url' if supported, otherwise the first supported format.
+ * Returns undefined if model is unknown or doesn't support the media type.
+ */
+export function getDefaultMediaFormat(
+  model: string,
+  mediaType: 'image' | 'audio' | 'video'
+): MediaInputFormat | undefined {
+  const formats = getMediaFormats(model, mediaType);
+  if (!formats || formats.length === 0) return undefined;
+
+  // Prefer URL if available (more efficient for providers)
+  if (formats.includes('url')) return 'url';
+  // Otherwise return first available format
+  return formats[0];
+}
+
+/**
+ * Check if a model supports URL-based media input for a specific media type.
+ * This is a convenience function since URL support affects UI behavior.
+ */
+export function supportsMediaUrl(
+  model: string,
+  mediaType: 'image' | 'audio' | 'video'
+): boolean | undefined {
+  return supportsMediaFormat(model, mediaType, 'url');
 }
 
 // =============================================================================
