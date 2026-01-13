@@ -878,6 +878,138 @@ export function supportsMediaUrl(
 }
 
 // =============================================================================
+// Schema Capability Detection
+// =============================================================================
+
+/**
+ * Required capabilities detected from a schema
+ */
+export interface RequiredCapabilities {
+  imageInput?: boolean;
+  audioInput?: boolean;
+  videoInput?: boolean;
+  imageOutput?: boolean;
+  audioOutput?: boolean;
+  videoOutput?: boolean;
+}
+
+/**
+ * Detect media type from contentMediaType string
+ */
+function detectMediaType(contentMediaType: string): 'image' | 'audio' | 'video' | null {
+  if (contentMediaType.startsWith('image/')) return 'image';
+  if (contentMediaType.startsWith('audio/')) return 'audio';
+  if (contentMediaType.startsWith('video/')) return 'video';
+  return null;
+}
+
+/**
+ * Recursively scan a JSON schema for media type properties.
+ * Returns detected media types.
+ */
+function scanSchemaForMediaTypes(
+  schema: Record<string, unknown>,
+  result: Set<'image' | 'audio' | 'video'>
+): void {
+  if (!schema || typeof schema !== 'object') return;
+
+  // Check if this property has contentMediaType
+  const contentMediaType = schema['contentMediaType'];
+  if (typeof contentMediaType === 'string') {
+    const mediaType = detectMediaType(contentMediaType);
+    if (mediaType) {
+      result.add(mediaType);
+    }
+  }
+
+  // Recurse into properties
+  const properties = schema['properties'];
+  if (properties && typeof properties === 'object') {
+    for (const prop of Object.values(properties as Record<string, unknown>)) {
+      if (prop && typeof prop === 'object') {
+        scanSchemaForMediaTypes(prop as Record<string, unknown>, result);
+      }
+    }
+  }
+
+  // Recurse into array items
+  const items = schema['items'];
+  if (items && typeof items === 'object') {
+    scanSchemaForMediaTypes(items as Record<string, unknown>, result);
+  }
+}
+
+/**
+ * Detect required capabilities from input and output schemas.
+ * Returns which media capabilities are required.
+ */
+export function detectRequiredCapabilities(
+  inputSchema?: Record<string, unknown> | null,
+  outputSchema?: Record<string, unknown> | null
+): RequiredCapabilities {
+  const result: RequiredCapabilities = {};
+
+  // Scan input schema for required input capabilities
+  if (inputSchema) {
+    const inputMediaTypes = new Set<'image' | 'audio' | 'video'>();
+    scanSchemaForMediaTypes(inputSchema, inputMediaTypes);
+    if (inputMediaTypes.has('image')) result.imageInput = true;
+    if (inputMediaTypes.has('audio')) result.audioInput = true;
+    if (inputMediaTypes.has('video')) result.videoInput = true;
+  }
+
+  // Scan output schema for required output capabilities
+  if (outputSchema) {
+    const outputMediaTypes = new Set<'image' | 'audio' | 'video'>();
+    scanSchemaForMediaTypes(outputSchema, outputMediaTypes);
+    if (outputMediaTypes.has('image')) result.imageOutput = true;
+    if (outputMediaTypes.has('audio')) result.audioOutput = true;
+    if (outputMediaTypes.has('video')) result.videoOutput = true;
+  }
+
+  return result;
+}
+
+/**
+ * Check if a model meets the required capabilities.
+ * A capability is considered met if:
+ * - It's not required (undefined in requirements)
+ * - The model has it (true)
+ * - The model's capability is unknown (undefined) - we allow it since we can't be sure
+ *
+ * A capability is NOT met if:
+ * - It's required (true) AND the model explicitly doesn't have it (false)
+ */
+export function modelMeetsCapabilities(
+  model: string,
+  required: RequiredCapabilities
+): boolean {
+  const caps = getModelCapabilities(model);
+
+  // Check input capabilities
+  if (required.imageInput && caps.visionInput === false) return false;
+  if (required.audioInput && caps.audioInput === false) return false;
+  if (required.videoInput && caps.videoInput === false) return false;
+
+  // Check output capabilities
+  if (required.imageOutput && caps.imageOutput === false) return false;
+  if (required.audioOutput && caps.audioOutput === false) return false;
+  if (required.videoOutput && caps.videoOutput === false) return false;
+
+  return true;
+}
+
+/**
+ * Filter a list of models to only those that meet required capabilities.
+ */
+export function filterModelsByCapabilities(
+  models: readonly string[],
+  required: RequiredCapabilities
+): string[] {
+  return models.filter(model => modelMeetsCapabilities(model, required));
+}
+
+// =============================================================================
 // Cost Estimation
 // =============================================================================
 
