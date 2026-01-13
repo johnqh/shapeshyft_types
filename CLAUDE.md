@@ -40,7 +40,7 @@ bun run verify       # Typecheck + lint + build
 ## Type Categories
 
 ### Enums
-- `LlmProvider` - 'openai' | 'gemini' | 'anthropic' | 'llm_server'
+- `LlmProvider` - 'openai' | 'gemini' | 'anthropic' | 'lm_studio'
 - `HttpMethod` - 'GET' | 'POST'
 
 ### Entity Types (Database Models)

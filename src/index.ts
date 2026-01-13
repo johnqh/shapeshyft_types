@@ -30,7 +30,7 @@ export type LlmProvider =
   | 'xai'
   | 'deepseek'
   | 'perplexity'
-  | 'llm_server';
+  | 'lm_studio';
 
 export type HttpMethod = 'GET' | 'POST';
 
@@ -219,7 +219,7 @@ export const LLM_PROVIDERS: LlmProvider[] = [
   'xai',
   'deepseek',
   'perplexity',
-  'llm_server',
+  'lm_studio',
 ];
 
 // =============================================================================

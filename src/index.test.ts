@@ -155,13 +155,13 @@ describe('shapeshyft_types', () => {
 
   describe('enum type values', () => {
     it('should support all LlmProvider values', () => {
-      const providers: LlmProvider[] = ['openai', 'gemini', 'anthropic', 'llm_server'];
+      const providers: LlmProvider[] = ['openai', 'gemini', 'anthropic', 'lm_studio'];
 
       expect(providers).toHaveLength(4);
       expect(providers).toContain('openai');
       expect(providers).toContain('gemini');
       expect(providers).toContain('anthropic');
-      expect(providers).toContain('llm_server');
+      expect(providers).toContain('lm_studio');
     });
 
     it('should support all HttpMethod values', () => {
@@ -703,15 +703,15 @@ describe('shapeshyft_types', () => {
       expect(request.api_key).toBe('sk-test-key');
     });
 
-    it('should create valid LlmApiKeyCreateRequest for llm_server', () => {
+    it('should create valid LlmApiKeyCreateRequest for lm_studio', () => {
       const request: LlmApiKeyCreateRequest = {
         key_name: 'Custom LLM Server',
-        provider: 'llm_server',
+        provider: 'lm_studio',
         api_key: undefined,
         endpoint_url: 'https://my-llm-server.com/v1',
       };
 
-      expect(request.provider).toBe('llm_server');
+      expect(request.provider).toBe('lm_studio');
       expect(request.endpoint_url).toBe('https://my-llm-server.com/v1');
     });
 
