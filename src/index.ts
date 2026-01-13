@@ -411,6 +411,7 @@ export interface Endpoint {
   display_name: string;
   http_method: HttpMethod;
   llm_key_id: string;
+  model: string | null;
   input_schema: JsonSchema | null;
   output_schema: JsonSchema | null;
   instructions: string | null;
@@ -503,6 +504,7 @@ export interface EndpointCreateRequest {
   display_name: string;
   http_method: Optional<HttpMethod>;
   llm_key_id: string;
+  model: Optional<string>;
   input_schema: Optional<JsonSchema>;
   output_schema: Optional<JsonSchema>;
   instructions: Optional<string>;
@@ -514,6 +516,7 @@ export interface EndpointUpdateRequest {
   display_name?: Optional<string>;
   http_method?: Optional<HttpMethod>;
   llm_key_id?: Optional<string>;
+  model?: Optional<string>;
   input_schema?: Optional<JsonSchema>;
   output_schema?: Optional<JsonSchema>;
   instructions?: Optional<string>;
