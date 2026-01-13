@@ -171,21 +171,28 @@ export type PerplexityModel =
 
 /** Custom LLM server models (suggested options, user can also type custom) */
 export type LlmServerModel =
-  // Text models
-  | 'qwen/qwen3-30b-a3b-2507'
-  | 'meta-llama-3.1-8b-instruct'
-  | 'qwen-32b-everything'
+  // Text models (trending on LM Studio January 2026)
   | 'openai/gpt-oss-20b'
+  | 'openai/gpt-oss-120b'
+  | 'deepseek/deepseek-r1-0528-qwen3-8b'
+  | 'qwen/qwen3-8b'
+  | 'qwen/qwen3-14b'
+  | 'qwen/qwen3-30b-a3b-2507'
+  | 'qwen/qwen3-4b-2507'
+  | 'qwen/qwen3-4b-thinking-2507'
+  | 'qwen/qwen3-coder-30b'
+  | 'qwen/qwen2.5-coder-14b'
+  | 'mistralai/mistral-7b-instruct-v0.3'
+  | 'mistralai/ministral-3-14b-reasoning'
+  | 'mistralai/magistral-small-2509'
   // Vision models (LM Studio / local)
-  | 'llava-v1.6-mistral-7b'
-  | 'llava-v1.6-vicuna-13b'
-  | 'qwen2-vl-7b-instruct'
-  | 'phi-3-vision-128k-instruct'
-  | 'minicpm-v-2_6'
-  | 'moondream2'
-  | 'internvl2-8b'
-  | 'llama-3.2-11b-vision'
-  | 'pixtral-12b'
+  | 'google/gemma-3-4b'
+  | 'google/gemma-3-12b'
+  | 'google/gemma-3-27b'
+  | 'google/gemma-3n-e4b'
+  | 'qwen/qwen3-vl-4b'
+  | 'qwen/qwen3-vl-8b'
+  | 'qwen/qwen3-vl-30b'
   | string; // User can type any custom model name
 
 /** Union of all model types */
@@ -268,9 +275,14 @@ export const PROVIDER_MODELS: Record<LlmProvider, readonly string[]> = {
     'sonar-deep-research',
   ] as const,
   llm_server: [
-    'qwen/qwen3-30b-a3b-2507', 'meta-llama-3.1-8b-instruct', 'qwen-32b-everything', 'openai/gpt-oss-20b',
-    'llava-v1.6-mistral-7b', 'llava-v1.6-vicuna-13b', 'qwen2-vl-7b-instruct', 'phi-3-vision-128k-instruct',
-    'minicpm-v-2_6', 'moondream2', 'internvl2-8b', 'llama-3.2-11b-vision', 'pixtral-12b',
+    // Text models (trending on LM Studio January 2026)
+    'openai/gpt-oss-20b', 'openai/gpt-oss-120b', 'deepseek/deepseek-r1-0528-qwen3-8b',
+    'qwen/qwen3-8b', 'qwen/qwen3-14b', 'qwen/qwen3-30b-a3b-2507', 'qwen/qwen3-4b-2507',
+    'qwen/qwen3-4b-thinking-2507', 'qwen/qwen3-coder-30b', 'qwen/qwen2.5-coder-14b',
+    'mistralai/mistral-7b-instruct-v0.3', 'mistralai/ministral-3-14b-reasoning', 'mistralai/magistral-small-2509',
+    // Vision models
+    'google/gemma-3-4b', 'google/gemma-3-12b', 'google/gemma-3-27b', 'google/gemma-3n-e4b',
+    'qwen/qwen3-vl-4b', 'qwen/qwen3-vl-8b', 'qwen/qwen3-vl-30b',
   ] as const,
 };
 
@@ -285,7 +297,7 @@ export const DEFAULT_PROVIDER_MODEL: Record<LlmProvider, string> = {
   xai: 'grok-3-mini',
   deepseek: 'deepseek-chat',
   perplexity: 'sonar',
-  llm_server: 'meta-llama-3.1-8b-instruct',
+  llm_server: 'qwen/qwen3-8b',
 };
 
 /** Providers that allow custom model input (user can type any model name) */
@@ -722,50 +734,55 @@ export const MODEL_CAPABILITIES: Record<string, ModelCapabilities> = {
   'sonar-deep-research': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
 
   // ===========================================================================
-  // LM Studio / Local Models (common vision models)
+  // LM Studio / Local Models (trending January 2026)
   // Local models typically only support base64 as they don't have internet access
+  // Note: openai/gpt-oss models are defined in the Groq section above
   // ===========================================================================
-  'llava-v1.6-mistral-7b': {
+  // Text-only models
+  'deepseek/deepseek-r1-0528-qwen3-8b': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'qwen/qwen3-8b': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'qwen/qwen3-14b': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'qwen/qwen3-30b-a3b-2507': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'qwen/qwen3-4b-2507': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'qwen/qwen3-4b-thinking-2507': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'qwen/qwen3-coder-30b': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'qwen/qwen2.5-coder-14b': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'mistralai/mistral-7b-instruct-v0.3': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'mistralai/ministral-3-14b-reasoning': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  'mistralai/magistral-small-2509': { visionInput: false, audioInput: false, videoInput: false, imageOutput: false, audioOutput: false, videoOutput: false },
+  // Vision models - Google Gemma 3 (supports image input)
+  'google/gemma-3-4b': {
     visionInput: true, audioInput: false, videoInput: false,
     imageOutput: false, audioOutput: false, videoOutput: false,
     mediaFormats: { imageFormats: ['base64'] },
   },
-  'llava-v1.6-vicuna-13b': {
+  'google/gemma-3-12b': {
     visionInput: true, audioInput: false, videoInput: false,
     imageOutput: false, audioOutput: false, videoOutput: false,
     mediaFormats: { imageFormats: ['base64'] },
   },
-  'qwen2-vl-7b-instruct': {
+  'google/gemma-3-27b': {
     visionInput: true, audioInput: false, videoInput: false,
     imageOutput: false, audioOutput: false, videoOutput: false,
     mediaFormats: { imageFormats: ['base64'] },
   },
-  'phi-3-vision-128k-instruct': {
+  'google/gemma-3n-e4b': {
     visionInput: true, audioInput: false, videoInput: false,
     imageOutput: false, audioOutput: false, videoOutput: false,
     mediaFormats: { imageFormats: ['base64'] },
   },
-  'minicpm-v-2_6': {
+  // Vision models - Qwen3-VL (supports image input)
+  'qwen/qwen3-vl-4b': {
     visionInput: true, audioInput: false, videoInput: false,
     imageOutput: false, audioOutput: false, videoOutput: false,
     mediaFormats: { imageFormats: ['base64'] },
   },
-  'moondream2': {
+  'qwen/qwen3-vl-8b': {
     visionInput: true, audioInput: false, videoInput: false,
     imageOutput: false, audioOutput: false, videoOutput: false,
     mediaFormats: { imageFormats: ['base64'] },
   },
-  'internvl2-8b': {
-    visionInput: true, audioInput: false, videoInput: false,
-    imageOutput: false, audioOutput: false, videoOutput: false,
-    mediaFormats: { imageFormats: ['base64'] },
-  },
-  'llama-3.2-11b-vision': {
-    visionInput: true, audioInput: false, videoInput: false,
-    imageOutput: false, audioOutput: false, videoOutput: false,
-    mediaFormats: { imageFormats: ['base64'] },
-  },
-  'pixtral-12b': {
+  'qwen/qwen3-vl-30b': {
     visionInput: true, audioInput: false, videoInput: false,
     imageOutput: false, audioOutput: false, videoOutput: false,
     mediaFormats: { imageFormats: ['base64'] },
@@ -1210,22 +1227,30 @@ export const COST_PER_MILLION_TOKENS: Record<string, ModelPricing> = {
   'sonar-deep-research': { input: 1200, output: 1200 },
 
   // ==========================================================================
-  // LLM Server (custom) - Default/estimated pricing for local models
+  // LLM Server (LM Studio) - Estimated pricing for local models (January 2026)
+  // Pricing is notional since local models have no per-token cost
+  // Note: openai/gpt-oss models pricing defined above in Groq section
   // ==========================================================================
   // Text models
+  'deepseek/deepseek-r1-0528-qwen3-8b': { input: 20, output: 40 },
+  'qwen/qwen3-8b': { input: 20, output: 40 },
+  'qwen/qwen3-14b': { input: 30, output: 60 },
   'qwen/qwen3-30b-a3b-2507': { input: 50, output: 100 },
-  'meta-llama-3.1-8b-instruct': { input: 20, output: 40 },
-  'qwen-32b-everything': { input: 50, output: 100 },
-  // Vision models (LM Studio / local) - estimated based on model size
-  'llava-v1.6-mistral-7b': { input: 25, output: 50 },
-  'llava-v1.6-vicuna-13b': { input: 40, output: 80 },
-  'qwen2-vl-7b-instruct': { input: 25, output: 50 },
-  'phi-3-vision-128k-instruct': { input: 20, output: 40 },
-  'minicpm-v-2_6': { input: 15, output: 30 },
-  'moondream2': { input: 10, output: 20 },
-  'internvl2-8b': { input: 25, output: 50 },
-  'llama-3.2-11b-vision': { input: 30, output: 60 },
-  'pixtral-12b': { input: 35, output: 70 },
+  'qwen/qwen3-4b-2507': { input: 10, output: 20 },
+  'qwen/qwen3-4b-thinking-2507': { input: 10, output: 20 },
+  'qwen/qwen3-coder-30b': { input: 50, output: 100 },
+  'qwen/qwen2.5-coder-14b': { input: 30, output: 60 },
+  'mistralai/mistral-7b-instruct-v0.3': { input: 15, output: 30 },
+  'mistralai/ministral-3-14b-reasoning': { input: 30, output: 60 },
+  'mistralai/magistral-small-2509': { input: 30, output: 60 },
+  // Vision models
+  'google/gemma-3-4b': { input: 15, output: 30 },
+  'google/gemma-3-12b': { input: 30, output: 60 },
+  'google/gemma-3-27b': { input: 50, output: 100 },
+  'google/gemma-3n-e4b': { input: 15, output: 30 },
+  'qwen/qwen3-vl-4b': { input: 15, output: 30 },
+  'qwen/qwen3-vl-8b': { input: 25, output: 50 },
+  'qwen/qwen3-vl-30b': { input: 50, output: 100 },
 
   // ==========================================================================
   // Default for unknown models
@@ -1753,3 +1778,41 @@ export interface HealthCheckData {
   version: string;
   status: string;
 }
+
+// =============================================================================
+// Provider API Types (for GET /providers endpoints)
+// =============================================================================
+
+/**
+ * Provider configuration returned from the API
+ */
+export interface ProviderConfig {
+  id: LlmProvider;
+  name: string;
+  description: string;
+  allowsCustomModel: boolean;
+  defaultModel: string;
+  requiresEndpointUrl: boolean;
+}
+
+/**
+ * Model information with capabilities and pricing
+ */
+export interface ModelInfo {
+  id: string;
+  capabilities: ModelCapabilities;
+  pricing: ModelPricing;
+}
+
+/**
+ * Response from GET /providers/:provider/models
+ */
+export interface ProviderModelsResponse {
+  provider: ProviderConfig;
+  models: ModelInfo[];
+}
+
+// Provider API response type aliases
+export type ProviderListResponse = BaseResponse<ProviderConfig[]>;
+export type ProviderResponse = BaseResponse<ProviderConfig>;
+export type ProviderModelsApiResponse = BaseResponse<ProviderModelsResponse>;
