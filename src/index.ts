@@ -34,6 +34,11 @@ export type LlmProvider =
 
 export type HttpMethod = 'GET' | 'POST';
 
+/**
+ * Media type for multimodal content
+ */
+export type MediaType = 'image' | 'audio' | 'video';
+
 // =============================================================================
 // LLM Provider Models
 // =============================================================================
@@ -270,6 +275,39 @@ export interface ModelCapabilities {
   mediaFormats?: MediaFormatSupport;
 }
 
+// =============================================================================
+// Multimodal Content Types
+// =============================================================================
+
+/**
+ * Media content for LLM input (images, audio, video).
+ * Used to pass media to multimodal models.
+ */
+export interface MediaContent {
+  /** Type of media */
+  type: MediaType;
+  /** Format of the data */
+  format: 'base64' | 'url';
+  /** MIME type (e.g., "image/png", "audio/mp3", "video/mp4") */
+  mimeType: string;
+  /** Base64 data (without prefix) or URL */
+  data: string;
+  /** Original field name from input (for debugging/logging) */
+  fieldName?: string;
+}
+
+/**
+ * Generated media from LLM output (Imagen, Veo, GPT-4o audio).
+ * Returned when models generate images, audio, or video.
+ */
+export interface GeneratedMedia {
+  /** Type of generated media */
+  type: MediaType;
+  /** MIME type of the generated media */
+  mimeType: string;
+  /** Base64 data or URL depending on output format configuration */
+  data: string;
+}
 
 // =============================================================================
 // Schema Capability Detection
@@ -572,6 +610,19 @@ export interface Project {
   updated_at: Date | null;
 }
 
+/**
+ * Configuration for expected media output from an endpoint.
+ * Used to configure models like GPT-4o (audio), Imagen (images), Veo (video).
+ */
+export interface MediaOutputConfig {
+  /** Whether the endpoint expects audio output */
+  audio?: boolean;
+  /** Whether the endpoint expects image output */
+  image?: boolean;
+  /** Whether the endpoint expects video output */
+  video?: boolean;
+}
+
 export interface Endpoint {
   uuid: string;
   project_id: string;
@@ -587,6 +638,10 @@ export interface Endpoint {
   is_active: boolean | null;
   // IP allowlist - array of IPv4 addresses, null = allow all
   ip_allowlist: string[] | null;
+  // Media output configuration - what media types this endpoint generates
+  expects_media_output: MediaOutputConfig | null;
+  // How to return generated media ("base64" for inline, "url" for cloud storage)
+  output_media_format: 'base64' | 'url' | null;
   created_at: Date | null;
   updated_at: Date | null;
 }
@@ -677,6 +732,8 @@ export interface EndpointCreateRequest {
   output_schema: Optional<JsonSchema>;
   instructions: Optional<string>;
   context: Optional<string>;
+  expects_media_output?: Optional<MediaOutputConfig>;
+  output_media_format?: Optional<'base64' | 'url'>;
 }
 
 export interface EndpointUpdateRequest {
@@ -691,6 +748,8 @@ export interface EndpointUpdateRequest {
   context?: Optional<string>;
   is_active?: Optional<boolean>;
   ip_allowlist?: Optional<string[]>;
+  expects_media_output?: Optional<MediaOutputConfig>;
+  output_media_format?: Optional<'base64' | 'url'>;
 }
 
 // =============================================================================
@@ -783,6 +842,8 @@ export interface AiExecutionResponse {
     latency_ms: number;
     estimated_cost_cents: number;
   };
+  /** Generated media (images, audio, video) from generative models */
+  generated_media?: GeneratedMedia[];
 }
 
 /** Response from /prompt endpoint - returns just the generated prompt */
