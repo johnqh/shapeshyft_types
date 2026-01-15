@@ -642,6 +642,8 @@ export interface Endpoint {
   expects_media_output: MediaOutputConfig | null;
   // How to return generated media ("base64" for inline, "url" for cloud storage)
   output_media_format: 'base64' | 'url' | null;
+  // For Whisper endpoints: model to use for structured extraction from transcription
+  transcription_extraction_model: string | null;
   created_at: Date | null;
   updated_at: Date | null;
 }
@@ -657,6 +659,69 @@ export interface UsageAnalytics {
   latency_ms: number | null;
   estimated_cost_cents: number | null;
   request_metadata: Record<string, unknown> | null;
+}
+
+// =============================================================================
+// Entity Storage Config Types
+// =============================================================================
+
+export type StorageProvider = 'gcs' | 's3';
+
+/**
+ * Storage configuration for an entity (safe version without credentials).
+ * Used for cloud storage of generated media.
+ */
+export interface EntityStorageConfig {
+  uuid: string;
+  entity_id: string;
+  provider: StorageProvider;
+  bucket: string;
+  path_prefix: string | null;
+  created_at: Date | null;
+  updated_at: Date | null;
+}
+
+/**
+ * GCS service account credentials
+ */
+export interface GCSCredentials {
+  type: 'service_account';
+  project_id: string;
+  private_key_id: string;
+  private_key: string;
+  client_email: string;
+  client_id: string;
+  auth_uri?: string;
+  token_uri?: string;
+  auth_provider_x509_cert_url?: string;
+  client_x509_cert_url?: string;
+}
+
+/**
+ * AWS S3 credentials
+ */
+export interface S3Credentials {
+  access_key_id: string;
+  secret_access_key: string;
+  region: string;
+}
+
+export type StorageCredentials = GCSCredentials | S3Credentials;
+
+/**
+ * Request to create or update storage configuration
+ */
+export interface StorageConfigCreateRequest {
+  provider: StorageProvider;
+  bucket: string;
+  path_prefix?: string;
+  credentials: StorageCredentials;
+}
+
+export interface StorageConfigUpdateRequest {
+  bucket?: string;
+  path_prefix?: string | null;
+  credentials?: StorageCredentials;
 }
 
 export interface UserSettings {
@@ -734,6 +799,7 @@ export interface EndpointCreateRequest {
   context: Optional<string>;
   expects_media_output?: Optional<MediaOutputConfig>;
   output_media_format?: Optional<'base64' | 'url'>;
+  transcription_extraction_model?: Optional<string>;
 }
 
 export interface EndpointUpdateRequest {
@@ -750,6 +816,7 @@ export interface EndpointUpdateRequest {
   ip_allowlist?: Optional<string[]>;
   expects_media_output?: Optional<MediaOutputConfig>;
   output_media_format?: Optional<'base64' | 'url'>;
+  transcription_extraction_model?: Optional<string>;
 }
 
 // =============================================================================
