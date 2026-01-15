@@ -279,7 +279,7 @@ export interface ModelCapabilities {
  * Required capabilities detected from a schema
  */
 export interface RequiredCapabilities {
-  imageInput?: boolean;
+  visionInput?: boolean;   // Matches ModelCapabilities.visionInput
   audioInput?: boolean;
   videoInput?: boolean;
   imageOutput?: boolean;
@@ -347,7 +347,7 @@ export function detectRequiredCapabilities(
   if (inputSchema) {
     const inputMediaTypes = new Set<'image' | 'audio' | 'video'>();
     scanSchemaForMediaTypes(inputSchema, inputMediaTypes);
-    if (inputMediaTypes.has('image')) result.imageInput = true;
+    if (inputMediaTypes.has('image')) result.visionInput = true;
     if (inputMediaTypes.has('audio')) result.audioInput = true;
     if (inputMediaTypes.has('video')) result.videoInput = true;
   }
