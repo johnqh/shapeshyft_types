@@ -155,12 +155,29 @@ describe('shapeshyft_types', () => {
 
   describe('enum type values', () => {
     it('should support all LlmProvider values', () => {
-      const providers: LlmProvider[] = ['openai', 'gemini', 'anthropic', 'lm_studio'];
+      const providers: LlmProvider[] = [
+        'openai',
+        'anthropic',
+        'gemini',
+        'mistral',
+        'cohere',
+        'groq',
+        'xai',
+        'deepseek',
+        'perplexity',
+        'lm_studio',
+      ];
 
-      expect(providers).toHaveLength(4);
+      expect(providers).toHaveLength(10);
       expect(providers).toContain('openai');
-      expect(providers).toContain('gemini');
       expect(providers).toContain('anthropic');
+      expect(providers).toContain('gemini');
+      expect(providers).toContain('mistral');
+      expect(providers).toContain('cohere');
+      expect(providers).toContain('groq');
+      expect(providers).toContain('xai');
+      expect(providers).toContain('deepseek');
+      expect(providers).toContain('perplexity');
       expect(providers).toContain('lm_studio');
     });
 
@@ -413,7 +430,7 @@ describe('shapeshyft_types', () => {
     it('should create valid UserSettings object with is_default flag', () => {
       const settings: UserSettings = {
         id: '123e4567-e89b-12d3-a456-426614174000',
-        user_id: '123e4567-e89b-12d3-a456-426614174001',
+        firebase_uid: 'firebase-uid-123',
         organization_name: 'My Org',
         organization_path: 'my_org',
         is_default: false,
@@ -428,7 +445,7 @@ describe('shapeshyft_types', () => {
     it('should support default UserSettings (not yet saved)', () => {
       const defaultSettings: UserSettings = {
         id: null,
-        user_id: '123e4567-e89b-12d3-a456-426614174001',
+        firebase_uid: 'firebase-uid-123',
         organization_name: null,
         organization_path: 'abc12345',
         is_default: true,
