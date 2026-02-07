@@ -8,6 +8,7 @@ TypeScript type definitions for ShapeShyft API - LLM structured output platform.
 
 - **Language**: TypeScript
 - **Runtime**: Bun
+- **Package Manager**: Bun (do not use npm/yarn/pnpm for installing dependencies)
 - **Build**: TypeScript compiler (dual ESM/CJS)
 - **Test**: Vitest
 
