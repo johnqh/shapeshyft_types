@@ -148,3 +148,60 @@ Tests verify type assignability and response helpers:
 ```bash
 bun run test         # Run tests
 ```
+
+## Workspace Context
+
+This project is part of the **ShapeShyft** multi-project workspace at the parent directory. See `../CLAUDE.md` for the full architecture, dependency graph, and build order.
+
+## Downstream Impact
+
+This is the **most impactful package** in the ShapeShyft dependency chain. Changes cascade widely.
+
+| Downstream Consumer | Relationship |
+|---------------------|-------------|
+| `shapeshyft_client` | Direct dependency |
+| `shapeshyft_lib` | Transitive via shapeshyft_client |
+| `shapeshyft_app` | Transitive + direct dependency |
+| `shapeshyft_api` | Direct dependency |
+
+After making changes:
+1. `bun run verify` in this project
+2. `npm publish`
+3. Update in dependency order: `shapeshyft_client` -> `shapeshyft_lib` -> `shapeshyft_app`, and `shapeshyft_api`
+
+**Be extremely careful with breaking changes.** Renaming or removing a type/field breaks multiple projects. Prefer additive changes (new optional fields, new types).
+
+## Local Dev Workflow
+
+```bash
+# In this project:
+bun link
+
+# In each consuming project:
+cd ../shapeshyft_client && bun link @sudobility/shapeshyft_types
+cd ../shapeshyft_api && bun link @sudobility/shapeshyft_types
+
+# Rebuild after changes:
+bun run build
+
+# Then rebuild consumers in order:
+cd ../shapeshyft_client && bun run build
+cd ../shapeshyft_lib && bun run build
+
+# When done, unlink in each consumer:
+bun unlink @sudobility/shapeshyft_types && bun install
+```
+
+## Pre-Commit Checklist
+
+```bash
+bun run verify    # Runs: typecheck -> lint -> build (does NOT include tests)
+bun run test      # Run tests separately
+```
+
+## Gotchas
+
+- **Dual ESM/CJS build** -- produces both `.js` (ESM) and `.cjs` (CJS) via two tsconfig files. The CJS build uses a rename step that copies from `dist-cjs/` to `dist/`.
+- **Re-exports from `@sudobility/types`** -- `ApiResponse<T>`, `successResponse()`, `errorResponse()` are re-exported. Do not duplicate these.
+- **Response helpers are runtime values, not just types** -- `successResponse()` and `errorResponse()` are actual functions.
+- **`LlmApiKeySafe` vs `LlmApiKey`** -- always use `LlmApiKeySafe` in API responses. `LlmApiKey` includes encrypted data that must not be sent to clients.
