@@ -2,9 +2,20 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import {
   successResponse,
   errorResponse,
+  estimateCost,
+  estimateMultimodalCost,
+  formatCost,
+  formatCostPerMillion,
+  detectRequiredCapabilities,
+  isValidModelForProvider,
+  PROVIDER_MODELS,
+  LLM_PROVIDERS,
   type LlmProvider,
   type HttpMethod,
   type JsonSchema,
+  type ModelPricing,
+  type MultimodalUsage,
+  type BooleanQueryParam,
   type User,
   type LlmApiKey,
   type LlmApiKeySafe,
@@ -908,6 +919,565 @@ describe('shapeshyft_types', () => {
       };
 
       expect(response.api_key).toContain('shyft_live_');
+    });
+  });
+
+  // ===========================================================================
+  // Improvement #2: Tests for Runtime Functions
+  // ===========================================================================
+
+  describe('estimateCost', () => {
+    const pricing: ModelPricing = {
+      input: 300,   // $3.00 per 1M input tokens
+      output: 1500, // $15.00 per 1M output tokens
+    };
+
+    it('should calculate cost for typical token usage', () => {
+      const cost = estimateCost(pricing, 1000, 500);
+      // (1000/1M)*300 + (500/1M)*1500 = 0.3 + 0.75 = 1.05 cents
+      expect(cost).toBe(1.05);
+    });
+
+    it('should return 0 for zero tokens', () => {
+      expect(estimateCost(pricing, 0, 0)).toBe(0);
+    });
+
+    it('should handle zero input tokens with non-zero output', () => {
+      const cost = estimateCost(pricing, 0, 1_000_000);
+      expect(cost).toBe(1500);
+    });
+
+    it('should handle zero output tokens with non-zero input', () => {
+      const cost = estimateCost(pricing, 1_000_000, 0);
+      expect(cost).toBe(300);
+    });
+
+    it('should calculate cost for exactly 1M tokens', () => {
+      const cost = estimateCost(pricing, 1_000_000, 1_000_000);
+      expect(cost).toBe(1800); // 300 + 1500
+    });
+
+    it('should handle very large token counts', () => {
+      const cost = estimateCost(pricing, 100_000_000, 50_000_000);
+      // (100M/1M)*300 + (50M/1M)*1500 = 30000 + 75000 = 105000
+      expect(cost).toBe(105000);
+    });
+
+    it('should round to 2 decimal places', () => {
+      // Create a scenario that produces many decimal places
+      const cost = estimateCost(pricing, 1, 1);
+      // (1/1M)*300 + (1/1M)*1500 = 0.0003 + 0.0015 = 0.0018 -> rounds to 0
+      expect(cost).toBe(0);
+    });
+
+    it('should handle pricing with zero cost', () => {
+      const freePricing: ModelPricing = { input: 0, output: 0 };
+      expect(estimateCost(freePricing, 1_000_000, 1_000_000)).toBe(0);
+    });
+  });
+
+  describe('estimateMultimodalCost', () => {
+    const fullPricing: ModelPricing = {
+      input: 300,
+      output: 1500,
+      imageInput: 50,     // 50 cents per input image
+      imageOutput: 200,   // $2 per generated image
+      audioInput: 10,     // 10 cents per minute
+      audioOutput: 30,    // 30 cents per minute
+      videoInput: 100,    // $1 per minute
+      videoOutput: 500,   // $5 per minute
+    };
+
+    it('should return 0 for empty usage', () => {
+      expect(estimateMultimodalCost(fullPricing, {})).toBe(0);
+    });
+
+    it('should calculate text-only cost', () => {
+      const usage: MultimodalUsage = {
+        inputTokens: 1_000_000,
+        outputTokens: 1_000_000,
+      };
+      expect(estimateMultimodalCost(fullPricing, usage)).toBe(1800);
+    });
+
+    it('should calculate image-only cost', () => {
+      const usage: MultimodalUsage = {
+        imagesInput: 3,
+        imagesOutput: 1,
+      };
+      // 3 * 50 + 1 * 200 = 150 + 200 = 350
+      expect(estimateMultimodalCost(fullPricing, usage)).toBe(350);
+    });
+
+    it('should calculate audio-only cost', () => {
+      const usage: MultimodalUsage = {
+        audioInputMinutes: 5,
+        audioOutputMinutes: 2,
+      };
+      // 5 * 10 + 2 * 30 = 50 + 60 = 110
+      expect(estimateMultimodalCost(fullPricing, usage)).toBe(110);
+    });
+
+    it('should calculate video-only cost', () => {
+      const usage: MultimodalUsage = {
+        videoInputMinutes: 2,
+        videoOutputMinutes: 1,
+      };
+      // 2 * 100 + 1 * 500 = 200 + 500 = 700
+      expect(estimateMultimodalCost(fullPricing, usage)).toBe(700);
+    });
+
+    it('should calculate combined multimodal cost', () => {
+      const usage: MultimodalUsage = {
+        inputTokens: 1_000_000,
+        outputTokens: 500_000,
+        imagesInput: 2,
+        imagesOutput: 1,
+        audioInputMinutes: 3,
+      };
+      // text: 300 + 750 = 1050
+      // images: 2*50 + 1*200 = 300
+      // audio: 3*10 = 30
+      expect(estimateMultimodalCost(fullPricing, usage)).toBe(1380);
+    });
+
+    it('should ignore media usage when pricing lacks media fields', () => {
+      const textOnlyPricing: ModelPricing = { input: 300, output: 1500 };
+      const usage: MultimodalUsage = {
+        inputTokens: 1_000_000,
+        imagesInput: 5,
+        audioInputMinutes: 10,
+        videoOutputMinutes: 2,
+      };
+      // Only text cost counts: 300
+      expect(estimateMultimodalCost(textOnlyPricing, usage)).toBe(300);
+    });
+
+    it('should handle zero values in usage', () => {
+      const usage: MultimodalUsage = {
+        inputTokens: 0,
+        outputTokens: 0,
+        imagesInput: 0,
+        imagesOutput: 0,
+      };
+      expect(estimateMultimodalCost(fullPricing, usage)).toBe(0);
+    });
+
+    it('should round to 2 decimal places', () => {
+      const usage: MultimodalUsage = { inputTokens: 333 };
+      const cost = estimateMultimodalCost(fullPricing, usage);
+      // (333/1M)*300 = 0.0999 -> rounds to 0.1
+      expect(cost).toBe(0.1);
+    });
+  });
+
+  describe('formatCost', () => {
+    it('should format sub-cent costs with 4 decimals', () => {
+      // 0.5 cents = $0.005
+      expect(formatCost(0.5)).toBe('$0.0050');
+    });
+
+    it('should format zero cost', () => {
+      expect(formatCost(0)).toBe('$0.0000');
+    });
+
+    it('should format costs under $1 with 3 decimals', () => {
+      // 50 cents = $0.50
+      expect(formatCost(50)).toBe('$0.500');
+    });
+
+    it('should format costs $1 and above with 2 decimals', () => {
+      // 150 cents = $1.50
+      expect(formatCost(150)).toBe('$1.50');
+    });
+
+    it('should format exactly $1', () => {
+      expect(formatCost(100)).toBe('$1.00');
+    });
+
+    it('should format large costs', () => {
+      // 100000 cents = $1000.00
+      expect(formatCost(100000)).toBe('$1000.00');
+    });
+
+    it('should format 1 cent exactly at the $0.01 boundary', () => {
+      // 1 cent = $0.01 -> this is < $1 but >= $0.01
+      expect(formatCost(1)).toBe('$0.010');
+    });
+
+    it('should format very small sub-cent costs', () => {
+      // 0.01 cents = $0.0001
+      expect(formatCost(0.01)).toBe('$0.0001');
+    });
+  });
+
+  describe('formatCostPerMillion', () => {
+    it('should format standard pricing', () => {
+      const pricing: ModelPricing = { input: 300, output: 1500 };
+      expect(formatCostPerMillion(pricing)).toBe('$3.00 / $15.00 per 1M tokens');
+    });
+
+    it('should format zero pricing', () => {
+      const pricing: ModelPricing = { input: 0, output: 0 };
+      expect(formatCostPerMillion(pricing)).toBe('$0.00 / $0.00 per 1M tokens');
+    });
+
+    it('should format cheap pricing with decimals', () => {
+      const pricing: ModelPricing = { input: 15, output: 60 };
+      expect(formatCostPerMillion(pricing)).toBe('$0.15 / $0.60 per 1M tokens');
+    });
+
+    it('should format expensive pricing', () => {
+      const pricing: ModelPricing = { input: 6000, output: 18000 };
+      expect(formatCostPerMillion(pricing)).toBe('$60.00 / $180.00 per 1M tokens');
+    });
+  });
+
+  describe('detectRequiredCapabilities', () => {
+    it('should return empty object for null schemas', () => {
+      expect(detectRequiredCapabilities(null, null)).toEqual({});
+    });
+
+    it('should return empty object for undefined schemas', () => {
+      expect(detectRequiredCapabilities(undefined, undefined)).toEqual({});
+    });
+
+    it('should return empty object for schemas without media types', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          age: { type: 'number' },
+        },
+      };
+      expect(detectRequiredCapabilities(schema, schema)).toEqual({});
+    });
+
+    it('should detect image input from contentMediaType', () => {
+      const inputSchema = {
+        type: 'object',
+        properties: {
+          photo: {
+            type: 'string',
+            contentMediaType: 'image/png',
+            contentEncoding: 'base64',
+          },
+        },
+      };
+      expect(detectRequiredCapabilities(inputSchema, null)).toEqual({
+        visionInput: true,
+      });
+    });
+
+    it('should detect audio input from contentMediaType', () => {
+      const inputSchema = {
+        type: 'object',
+        properties: {
+          recording: {
+            type: 'string',
+            contentMediaType: 'audio/mp3',
+          },
+        },
+      };
+      expect(detectRequiredCapabilities(inputSchema, null)).toEqual({
+        audioInput: true,
+      });
+    });
+
+    it('should detect video input from contentMediaType', () => {
+      const inputSchema = {
+        type: 'object',
+        properties: {
+          clip: {
+            type: 'string',
+            contentMediaType: 'video/mp4',
+          },
+        },
+      };
+      expect(detectRequiredCapabilities(inputSchema, null)).toEqual({
+        videoInput: true,
+      });
+    });
+
+    it('should detect image output from output schema', () => {
+      const outputSchema = {
+        type: 'object',
+        properties: {
+          generated_image: {
+            type: 'string',
+            contentMediaType: 'image/jpeg',
+          },
+        },
+      };
+      expect(detectRequiredCapabilities(null, outputSchema)).toEqual({
+        imageOutput: true,
+      });
+    });
+
+    it('should detect audio output from output schema', () => {
+      const outputSchema = {
+        type: 'object',
+        properties: {
+          speech: {
+            type: 'string',
+            contentMediaType: 'audio/wav',
+          },
+        },
+      };
+      expect(detectRequiredCapabilities(null, outputSchema)).toEqual({
+        audioOutput: true,
+      });
+    });
+
+    it('should detect multiple media types from a single schema', () => {
+      const inputSchema = {
+        type: 'object',
+        properties: {
+          photo: {
+            type: 'string',
+            contentMediaType: 'image/png',
+          },
+          recording: {
+            type: 'string',
+            contentMediaType: 'audio/mp3',
+          },
+        },
+      };
+      expect(detectRequiredCapabilities(inputSchema, null)).toEqual({
+        visionInput: true,
+        audioInput: true,
+      });
+    });
+
+    it('should detect both input and output capabilities', () => {
+      const inputSchema = {
+        type: 'object',
+        properties: {
+          photo: {
+            type: 'string',
+            contentMediaType: 'image/png',
+          },
+        },
+      };
+      const outputSchema = {
+        type: 'object',
+        properties: {
+          result_image: {
+            type: 'string',
+            contentMediaType: 'image/jpeg',
+          },
+        },
+      };
+      expect(detectRequiredCapabilities(inputSchema, outputSchema)).toEqual({
+        visionInput: true,
+        imageOutput: true,
+      });
+    });
+
+    it('should detect media types in deeply nested schemas', () => {
+      const inputSchema = {
+        type: 'object',
+        properties: {
+          level1: {
+            type: 'object',
+            properties: {
+              level2: {
+                type: 'object',
+                properties: {
+                  deep_image: {
+                    type: 'string',
+                    contentMediaType: 'image/webp',
+                  },
+                },
+              },
+            },
+          },
+        },
+      };
+      expect(detectRequiredCapabilities(inputSchema, null)).toEqual({
+        visionInput: true,
+      });
+    });
+
+    it('should detect media types in array items', () => {
+      const inputSchema = {
+        type: 'object',
+        properties: {
+          images: {
+            type: 'array',
+            items: {
+              type: 'string',
+              contentMediaType: 'image/png',
+            },
+          },
+        },
+      };
+      expect(detectRequiredCapabilities(inputSchema, null)).toEqual({
+        visionInput: true,
+      });
+    });
+
+    it('should handle empty schemas', () => {
+      expect(detectRequiredCapabilities({}, {})).toEqual({});
+    });
+
+    it('should handle schemas with empty properties', () => {
+      const schema = { type: 'object', properties: {} };
+      expect(detectRequiredCapabilities(schema, schema)).toEqual({});
+    });
+
+    it('should ignore unrecognized contentMediaType prefixes', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          data: {
+            type: 'string',
+            contentMediaType: 'application/json',
+          },
+        },
+      };
+      expect(detectRequiredCapabilities(schema, null)).toEqual({});
+    });
+  });
+
+  // ===========================================================================
+  // Improvement #3: PROVIDER_MODELS and isValidModelForProvider
+  // ===========================================================================
+
+  describe('PROVIDER_MODELS', () => {
+    it('should have an entry for every LLM provider', () => {
+      for (const provider of LLM_PROVIDERS) {
+        expect(PROVIDER_MODELS).toHaveProperty(provider);
+        expect(Array.isArray(PROVIDER_MODELS[provider])).toBe(true);
+      }
+    });
+
+    it('should have non-empty model lists for cloud providers', () => {
+      const cloudProviders: LlmProvider[] = [
+        'openai',
+        'anthropic',
+        'gemini',
+        'mistral',
+        'cohere',
+        'groq',
+        'xai',
+        'deepseek',
+        'perplexity',
+      ];
+      for (const provider of cloudProviders) {
+        expect(PROVIDER_MODELS[provider].length).toBeGreaterThan(0);
+      }
+    });
+
+    it('should have an empty list for lm_studio (any model accepted)', () => {
+      expect(PROVIDER_MODELS['lm_studio']).toHaveLength(0);
+    });
+
+    it('should contain known OpenAI models', () => {
+      expect(PROVIDER_MODELS['openai']).toContain('gpt-4o');
+      expect(PROVIDER_MODELS['openai']).toContain('gpt-4.1');
+      expect(PROVIDER_MODELS['openai']).toContain('o3');
+    });
+
+    it('should contain known Anthropic models', () => {
+      expect(PROVIDER_MODELS['anthropic']).toContain('claude-sonnet-4-20250514');
+      expect(PROVIDER_MODELS['anthropic']).toContain('claude-3-5-haiku-20241022');
+    });
+
+    it('should contain known Gemini models', () => {
+      expect(PROVIDER_MODELS['gemini']).toContain('gemini-2.5-pro');
+      expect(PROVIDER_MODELS['gemini']).toContain('gemini-2.0-flash');
+    });
+  });
+
+  describe('isValidModelForProvider', () => {
+    it('should return true for valid OpenAI model', () => {
+      expect(isValidModelForProvider('openai', 'gpt-4o')).toBe(true);
+    });
+
+    it('should return false for invalid OpenAI model', () => {
+      expect(isValidModelForProvider('openai', 'not-a-real-model')).toBe(false);
+    });
+
+    it('should return true for valid Anthropic model', () => {
+      expect(isValidModelForProvider('anthropic', 'claude-sonnet-4-20250514')).toBe(true);
+    });
+
+    it('should return false for model from wrong provider', () => {
+      expect(isValidModelForProvider('openai', 'claude-sonnet-4-20250514')).toBe(false);
+    });
+
+    it('should return true for any lm_studio model string', () => {
+      expect(isValidModelForProvider('lm_studio', 'any-custom-model')).toBe(true);
+      expect(isValidModelForProvider('lm_studio', '')).toBe(true);
+      expect(isValidModelForProvider('lm_studio', 'my-local-llama-3')).toBe(true);
+    });
+
+    it('should return true for valid Gemini model', () => {
+      expect(isValidModelForProvider('gemini', 'gemini-2.5-pro')).toBe(true);
+    });
+
+    it('should return true for valid DeepSeek model', () => {
+      expect(isValidModelForProvider('deepseek', 'deepseek-chat')).toBe(true);
+      expect(isValidModelForProvider('deepseek', 'deepseek-reasoner')).toBe(true);
+    });
+
+    it('should return false for empty string on cloud providers', () => {
+      expect(isValidModelForProvider('openai', '')).toBe(false);
+      expect(isValidModelForProvider('anthropic', '')).toBe(false);
+    });
+
+    it('should validate all providers have correct model count', () => {
+      // Spot-check some counts
+      expect(PROVIDER_MODELS['openai']).toHaveLength(10);
+      expect(PROVIDER_MODELS['anthropic']).toHaveLength(6);
+      expect(PROVIDER_MODELS['deepseek']).toHaveLength(2);
+      expect(PROVIDER_MODELS['perplexity']).toHaveLength(5);
+    });
+  });
+
+  // ===========================================================================
+  // Improvement #4: BooleanQueryParam type
+  // ===========================================================================
+
+  describe('BooleanQueryParam type', () => {
+    it('should accept "true" as a valid BooleanQueryParam', () => {
+      const param: BooleanQueryParam = 'true';
+      expect(param).toBe('true');
+    });
+
+    it('should accept "false" as a valid BooleanQueryParam', () => {
+      const param: BooleanQueryParam = 'false';
+      expect(param).toBe('false');
+    });
+
+    it('should accept undefined as a valid BooleanQueryParam', () => {
+      const param: BooleanQueryParam = undefined;
+      expect(param).toBeUndefined();
+    });
+
+    it('should work in ProjectQueryParams with narrowed type', () => {
+      const params: ProjectQueryParams = { is_active: 'true' };
+      expect(params.is_active).toBe('true');
+
+      const params2: ProjectQueryParams = { is_active: undefined };
+      expect(params2.is_active).toBeUndefined();
+    });
+
+    it('should work in EndpointQueryParams with narrowed type', () => {
+      const params: EndpointQueryParams = { is_active: 'false' };
+      expect(params.is_active).toBe('false');
+    });
+
+    it('should work in UsageAnalyticsQueryParams success field', () => {
+      const params: UsageAnalyticsQueryParams = {
+        endpoint_id: 'abc',
+        project_id: undefined,
+        start_date: undefined,
+        end_date: undefined,
+        success: 'true',
+      };
+      expect(params.success).toBe('true');
     });
   });
 

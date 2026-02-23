@@ -227,6 +227,126 @@ export const LLM_PROVIDERS: LlmProvider[] = [
   'lm_studio',
 ];
 
+/**
+ * Mapping of each LLM provider to its known valid model IDs.
+ * Useful for both server-side validation and client-side form validation.
+ *
+ * Note: `lm_studio` has an empty list because it accepts arbitrary
+ * user-supplied model names (any string is valid).
+ */
+export const PROVIDER_MODELS: Record<LlmProvider, readonly string[]> = {
+  openai: [
+    'gpt-4.1',
+    'gpt-4.1-mini',
+    'gpt-4.1-nano',
+    'gpt-4o',
+    'gpt-4o-mini',
+    'o3',
+    'o3-pro',
+    'o4-mini',
+    'gpt-4-turbo',
+    'o1',
+  ] as const,
+  anthropic: [
+    'claude-opus-4-5-20251124',
+    'claude-sonnet-4-5-20251124',
+    'claude-opus-4-1-20250805',
+    'claude-sonnet-4-20250514',
+    'claude-opus-4-20250514',
+    'claude-3-5-haiku-20241022',
+  ] as const,
+  gemini: [
+    'gemini-3-pro-preview',
+    'gemini-3-flash-preview',
+    'gemini-3-pro-image-preview',
+    'gemini-2.5-pro',
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.5-flash-image',
+    'gemini-2.5-flash-native-audio-preview',
+    'gemini-2.0-flash',
+    'gemini-2.0-flash-lite',
+  ] as const,
+  mistral: [
+    'mistral-large-2512',
+    'mistral-large-latest',
+    'mistral-medium-3.1',
+    'mistral-medium-latest',
+    'mistral-small-3.2',
+    'mistral-small-latest',
+    'ministral-3b-2512',
+    'ministral-8b-2512',
+    'ministral-14b-2512',
+    'codestral-2501',
+    'codestral-latest',
+    'pixtral-large-2411',
+    'pixtral-large-latest',
+    'voxtral-small',
+    'voxtral-mini',
+    'mistral-ocr-2512',
+  ] as const,
+  cohere: [
+    'command-a-03-2025',
+    'command-a-reasoning',
+    'command-a-vision',
+    'command-r-plus-08-2024',
+    'command-r-08-2024',
+    'command-r-plus',
+    'command-r',
+  ] as const,
+  groq: [
+    'llama-3.3-70b-versatile',
+    'llama-3.1-8b-instant',
+    'openai/gpt-oss-120b',
+    'openai/gpt-oss-20b',
+    'groq/compound',
+    'groq/compound-mini',
+    'meta-llama/llama-guard-4-12b',
+    'whisper-large-v3',
+    'whisper-large-v3-turbo',
+  ] as const,
+  xai: [
+    'grok-4',
+    'grok-4.1-fast',
+    'grok-3',
+    'grok-3-mini',
+    'grok-3-vision',
+    'grok-2',
+    'grok-2-vision',
+  ] as const,
+  deepseek: [
+    'deepseek-chat',
+    'deepseek-reasoner',
+  ] as const,
+  perplexity: [
+    'sonar',
+    'sonar-pro',
+    'sonar-reasoning',
+    'sonar-reasoning-pro',
+    'sonar-deep-research',
+  ] as const,
+  lm_studio: [] as const,
+} as const;
+
+/**
+ * Check whether a model ID is valid for the given provider.
+ * For `lm_studio`, any string is valid (returns true) since users
+ * can run arbitrary models on their local server.
+ *
+ * @param provider - The LLM provider to validate against
+ * @param model - The model ID string to check
+ * @returns true if the model is a known valid model for the provider
+ */
+export function isValidModelForProvider(
+  provider: LlmProvider,
+  model: string
+): boolean {
+  const models = PROVIDER_MODELS[provider];
+  // lm_studio accepts any model string
+  if (provider === 'lm_studio') return true;
+  return models.includes(model);
+}
+
 // =============================================================================
 // Model Capabilities (Multimodal Support)
 // =============================================================================
@@ -561,52 +681,104 @@ export interface JsonSchema {
 // Entity Types (database models)
 // =============================================================================
 
+/**
+ * @description ShapeShyft user account, linked to Firebase Authentication.
+ * Created on first login and referenced by entity membership for multi-tenant access.
+ */
 export interface User {
+  /** Internal database identifier */
   id: string;
+  /** Firebase Authentication UID -- the primary external identity used to authenticate API requests */
   firebase_uid: string;
+  /** User email address from Firebase Auth profile (may be null if auth provider omits it) */
   email: string | null;
+  /** User display name from Firebase Auth profile */
   display_name: string | null;
+  /** Timestamp when the user record was first created */
   created_at: Date | null;
+  /** Timestamp of the most recent profile update */
   updated_at: Date | null;
 }
 
+/**
+ * @description Full LLM API key record including encrypted credentials.
+ * Contains sensitive data (encrypted_api_key, encryption_iv) that must never
+ * be sent to clients. Use {@link LlmApiKeySafe} for API responses instead.
+ */
 export interface LlmApiKey {
+  /** Unique identifier for this API key record */
   uuid: string;
+  /** Entity (organization/personal) that owns this key */
   entity_id: string;
+  /** Human-readable label for this key (e.g., "Production OpenAI Key") */
   key_name: string;
+  /** LLM provider this key authenticates against */
   provider: LlmProvider;
+  /** AES-256-CBC encrypted API key -- null if no key has been set (e.g., local LM Studio) */
   encrypted_api_key: string | null;
+  /** Custom endpoint URL for self-hosted or proxy providers (e.g., LM Studio base URL) */
   endpoint_url: string | null;
+  /** Initialization vector used for AES decryption of encrypted_api_key */
   encryption_iv: string | null;
+  /** Whether this key is enabled for use; null treated as true */
   is_active: boolean | null;
+  /** Timestamp when this key record was created */
   created_at: Date | null;
+  /** Timestamp of the most recent update to this key */
   updated_at: Date | null;
 }
 
-/** Safe version of LlmApiKey without sensitive data (for API responses) */
+/**
+ * @description Safe version of {@link LlmApiKey} without sensitive data.
+ * Use this type in all API responses to avoid leaking encrypted credentials.
+ * The `has_api_key` boolean indicates whether a key is configured without exposing it.
+ */
 export interface LlmApiKeySafe {
+  /** Unique identifier for this API key record */
   uuid: string;
+  /** Entity (organization/personal) that owns this key */
   entity_id: string;
+  /** Human-readable label for this key */
   key_name: string;
+  /** LLM provider this key authenticates against */
   provider: LlmProvider;
+  /** Whether an API key value has been set (true) or is empty (false) */
   has_api_key: boolean;
+  /** Custom endpoint URL for self-hosted or proxy providers */
   endpoint_url: string | null;
+  /** Whether this key is enabled for use; null treated as true */
   is_active: boolean | null;
+  /** Timestamp when this key record was created */
   created_at: Date | null;
+  /** Timestamp of the most recent update to this key */
   updated_at: Date | null;
 }
 
+/**
+ * @description A ShapeShyft project that groups endpoints under a single API key.
+ * Projects are scoped to an entity and serve as the top-level organizational unit
+ * for managing AI endpoints.
+ */
 export interface Project {
+  /** Unique identifier for this project */
   uuid: string;
+  /** Entity (organization/personal) that owns this project */
   entity_id: string;
+  /** URL-safe slug used in API paths (e.g., "my-project") */
   project_name: string;
+  /** Human-readable project title shown in the UI */
   display_name: string;
+  /** Optional description of the project's purpose */
   description: string | null;
+  /** Whether this project is enabled; null treated as true */
   is_active: boolean | null;
-  // API Key fields (prefix only - full key is never returned in Project response)
+  /** Truncated prefix of the project API key for display (e.g., "shyft_live_ab..."). Full key is never returned in Project responses. */
   api_key_prefix: string | null;
+  /** Timestamp when the project API key was last generated or refreshed */
   api_key_created_at: Date | null;
+  /** Timestamp when this project was created */
   created_at: Date | null;
+  /** Timestamp of the most recent project update */
   updated_at: Date | null;
 }
 
@@ -623,41 +795,76 @@ export interface MediaOutputConfig {
   video?: boolean;
 }
 
+/**
+ * @description An AI endpoint configuration within a {@link Project}.
+ * Each endpoint defines a specific LLM interaction: the model, schemas,
+ * instructions, and access controls. Callers invoke endpoints via the
+ * project's API key.
+ */
 export interface Endpoint {
+  /** Unique identifier for this endpoint */
   uuid: string;
+  /** Parent project UUID */
   project_id: string;
+  /** URL-safe slug used in API paths (e.g., "analyze-text") */
   endpoint_name: string;
+  /** Human-readable endpoint title shown in the UI */
   display_name: string;
+  /** HTTP method accepted by this endpoint (GET for simple queries, POST for input payloads) */
   http_method: HttpMethod;
+  /** UUID of the {@link LlmApiKey} used to authenticate LLM requests */
   llm_key_id: string;
+  /** LLM model identifier override; null uses the provider's default model */
   model: string | null;
+  /** JSON Schema defining the expected input payload structure */
   input_schema: JsonSchema | null;
+  /** JSON Schema defining the expected LLM output structure */
   output_schema: JsonSchema | null;
+  /** System-level instructions prepended to the LLM prompt */
   instructions: string | null;
+  /** Additional context appended to the LLM prompt for grounding */
   context: string | null;
+  /** Whether this endpoint is enabled; null treated as true */
   is_active: boolean | null;
-  // IP allowlist - array of IPv4 addresses, null = allow all
+  /** Array of allowed IPv4 addresses. When null, all IPs are permitted (no restriction). */
   ip_allowlist: string[] | null;
-  // Media output configuration - what media types this endpoint generates
+  /** Declares which media types this endpoint is expected to generate (images, audio, video). Null means text-only output. */
   expects_media_output: MediaOutputConfig | null;
-  // How to return generated media ("base64" for inline, "url" for cloud storage)
+  /** Format for returning generated media: "base64" embeds data inline, "url" stores in cloud and returns a signed URL. Null means no media output. */
   output_media_format: 'base64' | 'url' | null;
-  // For Whisper endpoints: model to use for structured extraction from transcription
+  /** For audio/transcription endpoints (e.g., Whisper): the model used to extract structured data from the raw transcription text. Null means no post-processing. */
   transcription_extraction_model: string | null;
+  /** Timestamp when this endpoint was created */
   created_at: Date | null;
+  /** Timestamp of the most recent endpoint update */
   updated_at: Date | null;
 }
 
+/**
+ * @description A single API request log entry for usage tracking and billing.
+ * One record is created per endpoint invocation, capturing token counts,
+ * latency, cost, and caller metadata for analytics dashboards.
+ */
 export interface UsageAnalytics {
+  /** Unique identifier for this analytics record */
   uuid: string;
+  /** UUID of the endpoint that was invoked */
   endpoint_id: string;
+  /** Timestamp when the request was received */
   timestamp: Date;
+  /** Whether the LLM request completed successfully */
   success: boolean;
+  /** Error message if the request failed; null on success */
   error_message: string | null;
+  /** Number of input/prompt tokens consumed */
   tokens_input: number | null;
+  /** Number of output/completion tokens generated */
   tokens_output: number | null;
+  /** End-to-end request latency in milliseconds */
   latency_ms: number | null;
+  /** Estimated cost of this request in cents (USD) */
   estimated_cost_cents: number | null;
+  /** Arbitrary caller-supplied metadata (e.g., user_agent, ip, custom trace IDs). Stored as JSON and available for filtering in analytics queries. */
   request_metadata: Record<string, unknown> | null;
 }
 
@@ -724,14 +931,25 @@ export interface StorageConfigUpdateRequest {
   credentials?: StorageCredentials;
 }
 
+/**
+ * @description User-level settings and organization preferences.
+ * Every authenticated user has settings; if none have been saved yet,
+ * the API returns auto-generated defaults with `is_default: true`.
+ */
 export interface UserSettings {
+  /** Database row ID; null when settings are auto-generated defaults not yet persisted */
   id: string | null;
+  /** Firebase Authentication UID linking these settings to a {@link User} */
   firebase_uid: string;
+  /** Display name of the user's organization; null if not set */
   organization_name: string | null;
+  /** URL-safe organization path used in routing (auto-generated from UID if not customized) */
   organization_path: string;
   /** Computed field (not stored in DB): true if settings are auto-generated defaults */
   is_default: boolean;
+  /** Timestamp when these settings were first saved */
   created_at: Date | null;
+  /** Timestamp of the most recent settings update */
   updated_at: Date | null;
 }
 
@@ -823,12 +1041,19 @@ export interface EndpointUpdateRequest {
 // Query Parameter Types
 // =============================================================================
 
+/**
+ * Utility type for boolean-like query string parameters.
+ * URL query params are always strings, so boolean values are represented
+ * as the literal strings `'true'` or `'false'`, or `undefined` when absent.
+ */
+export type BooleanQueryParam = 'true' | 'false' | undefined;
+
 export interface ProjectQueryParams {
-  is_active: Optional<string>;
+  is_active: BooleanQueryParam;
 }
 
 export interface EndpointQueryParams {
-  is_active: Optional<string>;
+  is_active: BooleanQueryParam;
 }
 
 export interface UsageAnalyticsQueryParams {
@@ -836,7 +1061,7 @@ export interface UsageAnalyticsQueryParams {
   project_id: Optional<string>;
   start_date: Optional<string>;
   end_date: Optional<string>;
-  success: Optional<string>;
+  success: BooleanQueryParam;
 }
 
 // =============================================================================
@@ -979,7 +1204,18 @@ export interface ApiHelperRequestOutput {
 // Response Helper Functions
 // =============================================================================
 
-/** Create a success response */
+/**
+ * Create a typed success response wrapping the given data.
+ *
+ * @example
+ * ```typescript
+ * import { successResponse, type Project } from '@sudobility/shapeshyft_types';
+ *
+ * const project: Project = { uuid: '...', entity_id: '...', project_name: 'my-project', display_name: 'My Project', description: null, is_active: true, api_key_prefix: null, api_key_created_at: null, created_at: new Date(), updated_at: new Date() };
+ * const response = successResponse<Project>(project);
+ * // { success: true, data: { uuid: '...', project_name: 'my-project', ... }, timestamp: '2026-01-15T...' }
+ * ```
+ */
 export function successResponse<T>(data: T): BaseResponse<T> {
   return {
     success: true,
@@ -988,7 +1224,22 @@ export function successResponse<T>(data: T): BaseResponse<T> {
   };
 }
 
-/** Create an error response */
+/**
+ * Create a typed error response with the given error message.
+ *
+ * @example
+ * ```typescript
+ * import { errorResponse } from '@sudobility/shapeshyft_types';
+ *
+ * const response = errorResponse('Project not found');
+ * // { success: false, error: 'Project not found', timestamp: '2026-01-15T...' }
+ *
+ * // In an API handler:
+ * if (!project) {
+ *   return c.json(errorResponse('Project not found'), 404);
+ * }
+ * ```
+ */
 export function errorResponse(error: string): BaseResponse<never> {
   return {
     success: false,
