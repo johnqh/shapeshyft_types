@@ -141,14 +141,6 @@ shapeshyft_app (frontend)
 shapeshyft_api (backend)
 ```
 
-## Testing
-
-Tests verify type assignability and response helpers:
-
-```bash
-bun run test         # Run tests
-```
-
 ## Workspace Context
 
 This project is part of the **ShapeShyft** multi-project workspace at the parent directory. See `../CLAUDE.md` for the full architecture, dependency graph, and build order.
