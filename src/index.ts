@@ -92,13 +92,13 @@ export type GeminiModel =
 /** Mistral AI model options (January 2026) */
 export type MistralModel =
   // Large models
-  | 'mistral-large-2512'      // Mistral Large 3 (MoE 41B/675B)
+  | 'mistral-large-2512' // Mistral Large 3 (MoE 41B/675B)
   | 'mistral-large-latest'
   // Medium models
   | 'mistral-medium-3.1'
   | 'mistral-medium-latest'
   // Small models
-  | 'mistral-small-3.2'       // Vision capable
+  | 'mistral-small-3.2' // Vision capable
   | 'mistral-small-latest'
   // Ministral family (small, efficient)
   | 'ministral-3b-2512'
@@ -119,9 +119,9 @@ export type MistralModel =
 /** Cohere model options (January 2026) */
 export type CohereModel =
   // Command A family (latest)
-  | 'command-a-03-2025'        // Most performant
-  | 'command-a-reasoning'      // Hybrid reasoning, 256K context
-  | 'command-a-vision'         // Vision capable
+  | 'command-a-03-2025' // Most performant
+  | 'command-a-reasoning' // Hybrid reasoning, 256K context
+  | 'command-a-vision' // Vision capable
   // Command R family (updated)
   | 'command-r-plus-08-2024'
   | 'command-r-08-2024'
@@ -162,17 +162,17 @@ export type XaiModel =
 /** DeepSeek model options (January 2026) */
 export type DeepSeekModel =
   // V3.2 (latest - both modes share same model)
-  | 'deepseek-chat'      // Non-thinking mode of V3.2
+  | 'deepseek-chat' // Non-thinking mode of V3.2
   | 'deepseek-reasoner'; // Thinking mode of V3.2
 
 /** Perplexity model options (January 2026) */
 export type PerplexityModel =
   // Sonar family (current)
-  | 'sonar'                    // Lightweight search
-  | 'sonar-pro'                // Deeper retrieval
-  | 'sonar-reasoning'          // Real-time reasoning
-  | 'sonar-reasoning-pro'      // DeepSeek-R1 powered
-  | 'sonar-deep-research';     // Long-form reports
+  | 'sonar' // Lightweight search
+  | 'sonar-pro' // Deeper retrieval
+  | 'sonar-reasoning' // Real-time reasoning
+  | 'sonar-reasoning-pro' // DeepSeek-R1 powered
+  | 'sonar-deep-research'; // Long-form reports
 
 /** Custom LLM server models (suggested options, user can also type custom) */
 export type LlmServerModel =
@@ -314,10 +314,7 @@ export const PROVIDER_MODELS: Record<LlmProvider, readonly string[]> = {
     'grok-2',
     'grok-2-vision',
   ] as const,
-  deepseek: [
-    'deepseek-chat',
-    'deepseek-reasoner',
-  ] as const,
+  deepseek: ['deepseek-chat', 'deepseek-reasoner'] as const,
   perplexity: [
     'sonar',
     'sonar-pro',
@@ -382,14 +379,14 @@ export interface MediaFormatSupport {
  */
 export interface ModelCapabilities {
   // Input capabilities (what the model can receive)
-  visionInput?: boolean;    // Can process images
-  audioInput?: boolean;     // Can process audio
-  videoInput?: boolean;     // Can process video
+  visionInput?: boolean; // Can process images
+  audioInput?: boolean; // Can process audio
+  videoInput?: boolean; // Can process video
 
   // Output capabilities (what the model can generate)
-  imageOutput?: boolean;    // Can generate images
-  audioOutput?: boolean;    // Can generate audio
-  videoOutput?: boolean;    // Can generate video
+  imageOutput?: boolean; // Can generate images
+  audioOutput?: boolean; // Can generate audio
+  videoOutput?: boolean; // Can generate video
 
   // Media format support (what formats the model accepts)
   mediaFormats?: MediaFormatSupport;
@@ -437,7 +434,7 @@ export interface GeneratedMedia {
  * Required capabilities detected from a schema
  */
 export interface RequiredCapabilities {
-  visionInput?: boolean;   // Matches ModelCapabilities.visionInput
+  visionInput?: boolean; // Matches ModelCapabilities.visionInput
   audioInput?: boolean;
   videoInput?: boolean;
   imageOutput?: boolean;
@@ -448,7 +445,9 @@ export interface RequiredCapabilities {
 /**
  * Detect media type from contentMediaType string
  */
-function detectMediaType(contentMediaType: string): 'image' | 'audio' | 'video' | null {
+function detectMediaType(
+  contentMediaType: string
+): 'image' | 'audio' | 'video' | null {
   if (contentMediaType.startsWith('image/')) return 'image';
   if (contentMediaType.startsWith('audio/')) return 'audio';
   if (contentMediaType.startsWith('video/')) return 'video';
@@ -537,20 +536,20 @@ export function detectRequiredCapabilities(
  */
 export interface ModelPricing {
   // Text token costs (per 1M tokens in cents)
-  input: number;   // Cost per 1M input tokens
-  output: number;  // Cost per 1M output tokens
+  input: number; // Cost per 1M input tokens
+  output: number; // Cost per 1M output tokens
 
   // Image costs (per image in cents) - optional
-  imageInput?: number;   // Cost per input image
-  imageOutput?: number;  // Cost per generated image
+  imageInput?: number; // Cost per input image
+  imageOutput?: number; // Cost per generated image
 
   // Audio costs (per minute in cents) - optional
-  audioInput?: number;   // Cost per minute of audio input
-  audioOutput?: number;  // Cost per minute of audio output
+  audioInput?: number; // Cost per minute of audio input
+  audioOutput?: number; // Cost per minute of audio output
 
   // Video costs (per minute in cents) - optional
-  videoInput?: number;   // Cost per minute of video input
-  videoOutput?: number;  // Cost per minute of video output
+  videoInput?: number; // Cost per minute of video input
+  videoOutput?: number; // Cost per minute of video output
 }
 
 /**
@@ -562,12 +561,12 @@ export interface MultimodalUsage {
   outputTokens?: number;
 
   // Media counts/durations
-  imagesInput?: number;       // Number of input images
-  imagesOutput?: number;      // Number of generated images
+  imagesInput?: number; // Number of input images
+  imagesOutput?: number; // Number of generated images
   audioInputMinutes?: number; // Minutes of audio input
-  audioOutputMinutes?: number;// Minutes of audio output
+  audioOutputMinutes?: number; // Minutes of audio output
   videoInputMinutes?: number; // Minutes of video input
-  videoOutputMinutes?: number;// Minutes of video output
+  videoOutputMinutes?: number; // Minutes of video output
 }
 
 /**

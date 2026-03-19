@@ -276,7 +276,9 @@ describe('shapeshyft_types', () => {
         },
       };
 
-      expect(schema.properties?.address?.properties?.street?.type).toBe('string');
+      expect(schema.properties?.address?.properties?.street?.type).toBe(
+        'string'
+      );
     });
 
     it('should support additionalProperties', () => {
@@ -383,8 +385,14 @@ describe('shapeshyft_types', () => {
         display_name: 'Analyze Text',
         http_method: 'POST',
         llm_key_id: '123e4567-e89b-12d3-a456-426614174002',
-        input_schema: { type: 'object', properties: { text: { type: 'string' } } },
-        output_schema: { type: 'object', properties: { result: { type: 'string' } } },
+        input_schema: {
+          type: 'object',
+          properties: { text: { type: 'string' } },
+        },
+        output_schema: {
+          type: 'object',
+          properties: { result: { type: 'string' } },
+        },
         instructions: 'Analyze the given text',
         context: 'You are a text analyzer',
         is_active: true,
@@ -482,7 +490,9 @@ describe('shapeshyft_types', () => {
       };
 
       expect(aggregate.total_requests).toBe(100);
-      expect(aggregate.successful_requests + aggregate.failed_requests).toBe(100);
+      expect(aggregate.successful_requests + aggregate.failed_requests).toBe(
+        100
+      );
     });
 
     it('should create valid UsageByEndpoint object', () => {
@@ -784,8 +794,14 @@ describe('shapeshyft_types', () => {
         display_name: 'Analyze Text',
         http_method: 'POST',
         llm_key_id: '123e4567-e89b-12d3-a456-426614174000',
-        input_schema: { type: 'object', properties: { text: { type: 'string' } } },
-        output_schema: { type: 'object', properties: { result: { type: 'string' } } },
+        input_schema: {
+          type: 'object',
+          properties: { text: { type: 'string' } },
+        },
+        output_schema: {
+          type: 'object',
+          properties: { result: { type: 'string' } },
+        },
         instructions: 'Analyze the text',
         context: 'You are a text analyzer',
       };
@@ -907,7 +923,8 @@ describe('shapeshyft_types', () => {
 
     it('should create valid AiPromptResponse object', () => {
       const response: AiPromptResponse = {
-        prompt: 'Given the following input:\n{"text": "Hello"}\n\nAnalyze the sentiment.',
+        prompt:
+          'Given the following input:\n{"text": "Hello"}\n\nAnalyze the sentiment.',
       };
 
       expect(response.prompt).toContain('sentiment');
@@ -928,7 +945,7 @@ describe('shapeshyft_types', () => {
 
   describe('estimateCost', () => {
     const pricing: ModelPricing = {
-      input: 300,   // $3.00 per 1M input tokens
+      input: 300, // $3.00 per 1M input tokens
       output: 1500, // $15.00 per 1M output tokens
     };
 
@@ -980,12 +997,12 @@ describe('shapeshyft_types', () => {
     const fullPricing: ModelPricing = {
       input: 300,
       output: 1500,
-      imageInput: 50,     // 50 cents per input image
-      imageOutput: 200,   // $2 per generated image
-      audioInput: 10,     // 10 cents per minute
-      audioOutput: 30,    // 30 cents per minute
-      videoInput: 100,    // $1 per minute
-      videoOutput: 500,   // $5 per minute
+      imageInput: 50, // 50 cents per input image
+      imageOutput: 200, // $2 per generated image
+      audioInput: 10, // 10 cents per minute
+      audioOutput: 30, // 30 cents per minute
+      videoInput: 100, // $1 per minute
+      videoOutput: 500, // $5 per minute
     };
 
     it('should return 0 for empty usage', () => {
@@ -1114,7 +1131,9 @@ describe('shapeshyft_types', () => {
   describe('formatCostPerMillion', () => {
     it('should format standard pricing', () => {
       const pricing: ModelPricing = { input: 300, output: 1500 };
-      expect(formatCostPerMillion(pricing)).toBe('$3.00 / $15.00 per 1M tokens');
+      expect(formatCostPerMillion(pricing)).toBe(
+        '$3.00 / $15.00 per 1M tokens'
+      );
     });
 
     it('should format zero pricing', () => {
@@ -1129,7 +1148,9 @@ describe('shapeshyft_types', () => {
 
     it('should format expensive pricing', () => {
       const pricing: ModelPricing = { input: 6000, output: 18000 };
-      expect(formatCostPerMillion(pricing)).toBe('$60.00 / $180.00 per 1M tokens');
+      expect(formatCostPerMillion(pricing)).toBe(
+        '$60.00 / $180.00 per 1M tokens'
+      );
     });
   });
 
@@ -1380,8 +1401,12 @@ describe('shapeshyft_types', () => {
     });
 
     it('should contain known Anthropic models', () => {
-      expect(PROVIDER_MODELS['anthropic']).toContain('claude-sonnet-4-20250514');
-      expect(PROVIDER_MODELS['anthropic']).toContain('claude-3-5-haiku-20241022');
+      expect(PROVIDER_MODELS['anthropic']).toContain(
+        'claude-sonnet-4-20250514'
+      );
+      expect(PROVIDER_MODELS['anthropic']).toContain(
+        'claude-3-5-haiku-20241022'
+      );
     });
 
     it('should contain known Gemini models', () => {
@@ -1400,17 +1425,25 @@ describe('shapeshyft_types', () => {
     });
 
     it('should return true for valid Anthropic model', () => {
-      expect(isValidModelForProvider('anthropic', 'claude-sonnet-4-20250514')).toBe(true);
+      expect(
+        isValidModelForProvider('anthropic', 'claude-sonnet-4-20250514')
+      ).toBe(true);
     });
 
     it('should return false for model from wrong provider', () => {
-      expect(isValidModelForProvider('openai', 'claude-sonnet-4-20250514')).toBe(false);
+      expect(
+        isValidModelForProvider('openai', 'claude-sonnet-4-20250514')
+      ).toBe(false);
     });
 
     it('should return true for any lm_studio model string', () => {
-      expect(isValidModelForProvider('lm_studio', 'any-custom-model')).toBe(true);
+      expect(isValidModelForProvider('lm_studio', 'any-custom-model')).toBe(
+        true
+      );
       expect(isValidModelForProvider('lm_studio', '')).toBe(true);
-      expect(isValidModelForProvider('lm_studio', 'my-local-llama-3')).toBe(true);
+      expect(isValidModelForProvider('lm_studio', 'my-local-llama-3')).toBe(
+        true
+      );
     });
 
     it('should return true for valid Gemini model', () => {
@@ -1419,7 +1452,9 @@ describe('shapeshyft_types', () => {
 
     it('should return true for valid DeepSeek model', () => {
       expect(isValidModelForProvider('deepseek', 'deepseek-chat')).toBe(true);
-      expect(isValidModelForProvider('deepseek', 'deepseek-reasoner')).toBe(true);
+      expect(isValidModelForProvider('deepseek', 'deepseek-reasoner')).toBe(
+        true
+      );
     });
 
     it('should return false for empty string on cloud providers', () => {
