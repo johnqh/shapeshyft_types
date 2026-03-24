@@ -43,9 +43,13 @@ export type MediaType = 'image' | 'audio' | 'video';
 // LLM Provider Models
 // =============================================================================
 
-/** OpenAI model options (January 2026) */
+/** OpenAI model options (March 2026) */
 export type OpenAiModel =
-  // GPT-4.1 family (latest non-reasoning)
+  // GPT-5.4 family (latest frontier)
+  | 'gpt-5.4'
+  | 'gpt-5.4-mini'
+  | 'gpt-5.4-nano'
+  // GPT-4.1 family (coding-specialized, still in API)
   | 'gpt-4.1'
   | 'gpt-4.1-mini'
   | 'gpt-4.1-nano'
@@ -55,28 +59,30 @@ export type OpenAiModel =
   // Reasoning models (o-series)
   | 'o3'
   | 'o3-pro'
-  | 'o4-mini'
-  // Legacy (still available)
-  | 'gpt-4-turbo'
-  | 'o1';
+  | 'o4-mini';
 
-/** Anthropic model options (January 2026) */
+/** Anthropic model options (March 2026) */
 export type AnthropicModel =
-  // Claude 4.5 (latest)
-  | 'claude-opus-4-5-20251124'
-  | 'claude-sonnet-4-5-20251124'
+  // Claude 4.6 (latest)
+  | 'claude-opus-4-6-20260205'
+  | 'claude-sonnet-4-6-20260217'
+  // Claude 4.5
+  | 'claude-opus-4-5-20251101'
+  | 'claude-sonnet-4-5-20250929'
+  | 'claude-haiku-4-5-20251001'
   // Claude 4.1
   | 'claude-opus-4-1-20250805'
   // Claude 4 (May 2025)
   | 'claude-sonnet-4-20250514'
-  | 'claude-opus-4-20250514'
-  // Claude 3.5
-  | 'claude-3-5-haiku-20241022';
+  | 'claude-opus-4-20250514';
 
-/** Google Gemini model options (January 2026) */
+/** Google Gemini model options (March 2026) */
 export type GeminiModel =
-  // Gemini 3 (latest)
-  | 'gemini-3-pro-preview'
+  // Gemini 3.1 (latest)
+  | 'gemini-3.1-pro-preview'
+  | 'gemini-3.1-flash-lite-preview'
+  | 'gemini-3.1-flash-image-preview'
+  // Gemini 3
   | 'gemini-3-flash-preview'
   | 'gemini-3-pro-image-preview'
   // Gemini 2.5
@@ -84,12 +90,9 @@ export type GeminiModel =
   | 'gemini-2.5-flash'
   | 'gemini-2.5-flash-lite'
   | 'gemini-2.5-flash-image'
-  | 'gemini-2.5-flash-native-audio-preview'
-  // Gemini 2.0
-  | 'gemini-2.0-flash'
-  | 'gemini-2.0-flash-lite';
+  | 'gemini-2.5-flash-native-audio-preview';
 
-/** Mistral AI model options (January 2026) */
+/** Mistral AI model options (March 2026) */
 export type MistralModel =
   // Large models
   | 'mistral-large-2512' // Mistral Large 3 (MoE 41B/675B)
@@ -98,15 +101,21 @@ export type MistralModel =
   | 'mistral-medium-3.1'
   | 'mistral-medium-latest'
   // Small models
-  | 'mistral-small-3.2' // Vision capable
+  | 'mistral-small-2603' // Mistral Small 4 (hybrid reasoning/coding/instruct)
   | 'mistral-small-latest'
   // Ministral family (small, efficient)
   | 'ministral-3b-2512'
   | 'ministral-8b-2512'
   | 'ministral-14b-2512'
   // Code models
-  | 'codestral-2501'
+  | 'devstral-2512' // Devstral 2
+  | 'codestral-2508'
   | 'codestral-latest'
+  // Reasoning models (Magistral)
+  | 'magistral-medium-2509'
+  | 'magistral-small-2509'
+  | 'magistral-medium-latest'
+  | 'magistral-small-latest'
   // Vision models (Pixtral)
   | 'pixtral-large-2411'
   | 'pixtral-large-latest'
@@ -116,69 +125,68 @@ export type MistralModel =
   // Document AI
   | 'mistral-ocr-2512';
 
-/** Cohere model options (January 2026) */
+/** Cohere model options (March 2026) */
 export type CohereModel =
   // Command A family (latest)
   | 'command-a-03-2025' // Most performant
-  | 'command-a-reasoning' // Hybrid reasoning, 256K context
-  | 'command-a-vision' // Vision capable
-  // Command R family (updated)
+  | 'command-a-reasoning-08-2025' // Hybrid reasoning, 256K context
+  | 'command-a-vision-07-2025' // Vision capable
+  | 'command-a-translate-08-2025' // Machine translation, 23 languages
+  // Command R family
+  | 'command-r7b-12-2024' // Lightweight 7B
   | 'command-r-plus-08-2024'
-  | 'command-r-08-2024'
-  // Legacy aliases
-  | 'command-r-plus'
-  | 'command-r';
+  | 'command-r-08-2024';
 
-/** Groq model options (January 2026 - fast inference) */
+/** Groq model options (March 2026 - fast inference) */
 export type GroqModel =
   // Llama models
   | 'llama-3.3-70b-versatile'
   | 'llama-3.1-8b-instant'
+  | 'meta-llama/llama-4-scout-17b-16e-instruct'
   // GPT OSS models
   | 'openai/gpt-oss-120b'
   | 'openai/gpt-oss-20b'
+  // Other models
+  | 'qwen/qwen3-32b'
+  | 'moonshotai/kimi-k2-instruct-0905'
   // Compound (agentic with web search)
   | 'groq/compound'
   | 'groq/compound-mini'
-  // Safety
-  | 'meta-llama/llama-guard-4-12b'
   // Audio
   | 'whisper-large-v3'
   | 'whisper-large-v3-turbo';
 
-/** xAI (Grok) model options (January 2026) */
+/** xAI (Grok) model options (March 2026) */
 export type XaiModel =
-  // Grok 4 (latest)
-  | 'grok-4'
-  | 'grok-4.1-fast'
-  // Grok 3
-  | 'grok-3'
-  | 'grok-3-mini'
-  | 'grok-3-vision'
-  // Grok 2 (legacy)
-  | 'grok-2'
-  | 'grok-2-vision';
+  // Grok 4.20 (latest flagship)
+  | 'grok-4.20-0309-reasoning'
+  | 'grok-4.20-0309-non-reasoning'
+  // Grok 4.1 Fast
+  | 'grok-4-1-fast-reasoning'
+  | 'grok-4-1-fast-non-reasoning'
+  // Grok Code
+  | 'grok-code-fast-1';
 
-/** DeepSeek model options (January 2026) */
+/** DeepSeek model options (March 2026) */
 export type DeepSeekModel =
   // V3.2 (latest - both modes share same model)
   | 'deepseek-chat' // Non-thinking mode of V3.2
   | 'deepseek-reasoner'; // Thinking mode of V3.2
 
-/** Perplexity model options (January 2026) */
+/** Perplexity model options (March 2026) */
 export type PerplexityModel =
   // Sonar family (current)
   | 'sonar' // Lightweight search
   | 'sonar-pro' // Deeper retrieval
-  | 'sonar-reasoning' // Real-time reasoning
-  | 'sonar-reasoning-pro' // DeepSeek-R1 powered
+  | 'sonar-reasoning-pro' // Multi-step reasoning with web search
   | 'sonar-deep-research'; // Long-form reports
 
 /** Custom LLM server models (suggested options, user can also type custom) */
 export type LlmServerModel =
-  // Text models (trending on LM Studio January 2026)
+  // Text models (trending on LM Studio March 2026)
   | 'openai/gpt-oss-20b'
   | 'openai/gpt-oss-120b'
+  | 'meta-llama/llama-4-scout-17b-16e-instruct'
   | 'deepseek/deepseek-r1-0528-qwen3-8b'
   | 'qwen/qwen3-8b'
   | 'qwen/qwen3-14b'
@@ -186,8 +194,7 @@ export type LlmServerModel =
   | 'qwen/qwen3-4b-2507'
   | 'qwen/qwen3-4b-thinking-2507'
   | 'qwen/qwen3-coder-30b'
-  | 'qwen/qwen2.5-coder-14b'
-  | 'mistralai/mistral-7b-instruct-v0.3'
+  | 'mistralai/mistral-small-4'
   | 'mistralai/ministral-3-14b-reasoning'
   | 'mistralai/magistral-small-2509'
   // Vision models (LM Studio / local)
@@ -236,6 +243,9 @@ export const LLM_PROVIDERS: LlmProvider[] = [
  */
 export const PROVIDER_MODELS: Record<LlmProvider, readonly string[]> = {
   openai: [
+    'gpt-5.4',
+    'gpt-5.4-mini',
+    'gpt-5.4-nano',
     'gpt-4.1',
     'gpt-4.1-mini',
     'gpt-4.1-nano',
@@ -244,19 +254,21 @@ export const PROVIDER_MODELS: Record<LlmProvider, readonly string[]> = {
     'o3',
     'o3-pro',
     'o4-mini',
-    'gpt-4-turbo',
-    'o1',
   ] as const,
   anthropic: [
-    'claude-opus-4-5-20251124',
-    'claude-sonnet-4-5-20251124',
+    'claude-opus-4-6-20260205',
+    'claude-sonnet-4-6-20260217',
+    'claude-opus-4-5-20251101',
+    'claude-sonnet-4-5-20250929',
+    'claude-haiku-4-5-20251001',
     'claude-opus-4-1-20250805',
     'claude-sonnet-4-20250514',
     'claude-opus-4-20250514',
-    'claude-3-5-haiku-20241022',
   ] as const,
   gemini: [
-    'gemini-3-pro-preview',
+    'gemini-3.1-pro-preview',
+    'gemini-3.1-flash-lite-preview',
+    'gemini-3.1-flash-image-preview',
     'gemini-3-flash-preview',
     'gemini-3-pro-image-preview',
     'gemini-2.5-pro',
@@ -264,21 +276,24 @@ export const PROVIDER_MODELS: Record<LlmProvider, readonly string[]> = {
     'gemini-2.5-flash-lite',
     'gemini-2.5-flash-image',
     'gemini-2.5-flash-native-audio-preview',
-    'gemini-2.0-flash',
-    'gemini-2.0-flash-lite',
   ] as const,
   mistral: [
     'mistral-large-2512',
     'mistral-large-latest',
     'mistral-medium-3.1',
     'mistral-medium-latest',
-    'mistral-small-3.2',
+    'mistral-small-2603',
     'mistral-small-latest',
     'ministral-3b-2512',
     'ministral-8b-2512',
     'ministral-14b-2512',
-    'codestral-2501',
+    'devstral-2512',
+    'codestral-2508',
     'codestral-latest',
+    'magistral-medium-2509',
+    'magistral-small-2509',
+    'magistral-medium-latest',
+    'magistral-small-latest',
     'pixtral-large-2411',
     'pixtral-large-latest',
     'voxtral-small',
@@ -287,38 +302,37 @@ export const PROVIDER_MODELS: Record<LlmProvider, readonly string[]> = {
   ] as const,
   cohere: [
     'command-a-03-2025',
-    'command-a-reasoning',
-    'command-a-vision',
+    'command-a-reasoning-08-2025',
+    'command-a-vision-07-2025',
+    'command-a-translate-08-2025',
+    'command-r7b-12-2024',
     'command-r-plus-08-2024',
     'command-r-08-2024',
-    'command-r-plus',
-    'command-r',
   ] as const,
   groq: [
     'llama-3.3-70b-versatile',
     'llama-3.1-8b-instant',
+    'meta-llama/llama-4-scout-17b-16e-instruct',
     'openai/gpt-oss-120b',
     'openai/gpt-oss-20b',
+    'qwen/qwen3-32b',
+    'moonshotai/kimi-k2-instruct-0905',
     'groq/compound',
     'groq/compound-mini',
-    'meta-llama/llama-guard-4-12b',
     'whisper-large-v3',
     'whisper-large-v3-turbo',
   ] as const,
   xai: [
-    'grok-4',
-    'grok-4.1-fast',
-    'grok-3',
-    'grok-3-mini',
-    'grok-3-vision',
-    'grok-2',
-    'grok-2-vision',
+    'grok-4.20-0309-reasoning',
+    'grok-4.20-0309-non-reasoning',
+    'grok-4-1-fast-reasoning',
+    'grok-4-1-fast-non-reasoning',
+    'grok-code-fast-1',
   ] as const,
   deepseek: ['deepseek-chat', 'deepseek-reasoner'] as const,
   perplexity: [
     'sonar',
     'sonar-pro',
-    'sonar-reasoning',
     'sonar-reasoning-pro',
     'sonar-deep-research',
   ] as const,

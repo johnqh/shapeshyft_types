@@ -1405,13 +1405,13 @@ describe('shapeshyft_types', () => {
         'claude-sonnet-4-20250514'
       );
       expect(PROVIDER_MODELS['anthropic']).toContain(
-        'claude-3-5-haiku-20241022'
+        'claude-haiku-4-5-20251001'
       );
     });
 
     it('should contain known Gemini models', () => {
       expect(PROVIDER_MODELS['gemini']).toContain('gemini-2.5-pro');
-      expect(PROVIDER_MODELS['gemini']).toContain('gemini-2.0-flash');
+      expect(PROVIDER_MODELS['gemini']).toContain('gemini-2.5-flash');
     });
   });
 
@@ -1464,10 +1464,10 @@ describe('shapeshyft_types', () => {
 
     it('should validate all providers have correct model count', () => {
       // Spot-check some counts
-      expect(PROVIDER_MODELS['openai']).toHaveLength(10);
-      expect(PROVIDER_MODELS['anthropic']).toHaveLength(6);
+      expect(PROVIDER_MODELS['openai']).toHaveLength(11);
+      expect(PROVIDER_MODELS['anthropic']).toHaveLength(8);
       expect(PROVIDER_MODELS['deepseek']).toHaveLength(2);
-      expect(PROVIDER_MODELS['perplexity']).toHaveLength(5);
+      expect(PROVIDER_MODELS['perplexity']).toHaveLength(4);
     });
   });
 
