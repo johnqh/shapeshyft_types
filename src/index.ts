@@ -402,6 +402,9 @@ export interface ModelCapabilities {
   audioOutput?: boolean; // Can generate audio
   videoOutput?: boolean; // Can generate video
 
+  // Tool capabilities
+  webSearch?: boolean; // Can use web search (e.g., OpenAI Responses API)
+
   // Media format support (what formats the model accepts)
   mediaFormats?: MediaFormatSupport;
 }
@@ -847,6 +850,8 @@ export interface Endpoint {
   output_media_format: 'base64' | 'url' | null;
   /** For audio/transcription endpoints (e.g., Whisper): the model used to extract structured data from the raw transcription text. Null means no post-processing. */
   transcription_extraction_model: string | null;
+  /** Whether this endpoint uses web search for supported providers (OpenAI Responses API). */
+  web_search: boolean;
   /** Timestamp when this endpoint was created */
   created_at: Date | null;
   /** Timestamp of the most recent endpoint update */
@@ -1031,6 +1036,7 @@ export interface EndpointCreateRequest {
   expects_media_output?: Optional<MediaOutputConfig>;
   output_media_format?: Optional<'base64' | 'url'>;
   transcription_extraction_model?: Optional<string>;
+  web_search?: Optional<boolean>;
 }
 
 export interface EndpointUpdateRequest {
@@ -1048,6 +1054,7 @@ export interface EndpointUpdateRequest {
   expects_media_output?: Optional<MediaOutputConfig>;
   output_media_format?: Optional<'base64' | 'url'>;
   transcription_extraction_model?: Optional<string>;
+  web_search?: Optional<boolean>;
 }
 
 // =============================================================================
