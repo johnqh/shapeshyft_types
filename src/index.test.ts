@@ -1395,18 +1395,25 @@ describe('shapeshyft_types', () => {
     });
 
     it('should contain known OpenAI models', () => {
+      expect(PROVIDER_MODELS['openai']).toContain('gpt-5.6-sol');
+      expect(PROVIDER_MODELS['openai']).toContain('gpt-5.6-terra');
       expect(PROVIDER_MODELS['openai']).toContain('gpt-4o');
-      expect(PROVIDER_MODELS['openai']).toContain('gpt-4.1');
-      expect(PROVIDER_MODELS['openai']).toContain('o3');
     });
 
     it('should contain known Anthropic models', () => {
-      expect(PROVIDER_MODELS['anthropic']).toContain(
-        'claude-sonnet-4-20250514'
-      );
-      expect(PROVIDER_MODELS['anthropic']).toContain(
-        'claude-haiku-4-5-20251001'
-      );
+      expect(PROVIDER_MODELS['anthropic']).toContain('claude-opus-5');
+      expect(PROVIDER_MODELS['anthropic']).toContain('claude-sonnet-5');
+      expect(PROVIDER_MODELS['anthropic']).toContain('claude-haiku-4-5');
+    });
+
+    it('should use dateless Claude IDs for the 4.6 generation and later', () => {
+      // Claude 4.6+ IDs are pinned snapshots without a date suffix; appending
+      // one (claude-sonnet-4-6-20260217) is rejected by the Claude API.
+      for (const model of PROVIDER_MODELS['anthropic']) {
+        if (/^claude-(opus|sonnet)-4-[6-9]/.test(model)) {
+          expect(model).not.toMatch(/-\d{8}$/);
+        }
+      }
     });
 
     it('should contain known Gemini models', () => {
@@ -1425,15 +1432,13 @@ describe('shapeshyft_types', () => {
     });
 
     it('should return true for valid Anthropic model', () => {
-      expect(
-        isValidModelForProvider('anthropic', 'claude-sonnet-4-20250514')
-      ).toBe(true);
+      expect(isValidModelForProvider('anthropic', 'claude-sonnet-5')).toBe(
+        true
+      );
     });
 
     it('should return false for model from wrong provider', () => {
-      expect(
-        isValidModelForProvider('openai', 'claude-sonnet-4-20250514')
-      ).toBe(false);
+      expect(isValidModelForProvider('openai', 'claude-sonnet-5')).toBe(false);
     });
 
     it('should return true for any lm_studio model string', () => {
@@ -1451,8 +1456,8 @@ describe('shapeshyft_types', () => {
     });
 
     it('should return true for valid DeepSeek model', () => {
-      expect(isValidModelForProvider('deepseek', 'deepseek-chat')).toBe(true);
-      expect(isValidModelForProvider('deepseek', 'deepseek-reasoner')).toBe(
+      expect(isValidModelForProvider('deepseek', 'deepseek-v4-pro')).toBe(true);
+      expect(isValidModelForProvider('deepseek', 'deepseek-v4-flash')).toBe(
         true
       );
     });
@@ -1462,12 +1467,20 @@ describe('shapeshyft_types', () => {
       expect(isValidModelForProvider('anthropic', '')).toBe(false);
     });
 
-    it('should validate all providers have correct model count', () => {
-      // Spot-check some counts
-      expect(PROVIDER_MODELS['openai']).toHaveLength(11);
-      expect(PROVIDER_MODELS['anthropic']).toHaveLength(8);
-      expect(PROVIDER_MODELS['deepseek']).toHaveLength(2);
-      expect(PROVIDER_MODELS['perplexity']).toHaveLength(4);
+    it('should list models without duplicates for every cloud provider', () => {
+      // Deliberately an invariant rather than hardcoded counts: provider
+      // lineups turn over every few weeks, and a count assertion only ever
+      // fails for the catalog being refreshed -- which is the correct action,
+      // not a regression.
+      for (const [provider, models] of Object.entries(PROVIDER_MODELS)) {
+        if (provider === 'lm_studio') continue;
+        expect(models.length).toBeGreaterThan(0);
+        expect(new Set(models).size).toBe(models.length);
+        for (const model of models) {
+          expect(model.trim()).toBe(model);
+          expect(model.length).toBeGreaterThan(0);
+        }
+      }
     });
   });
 

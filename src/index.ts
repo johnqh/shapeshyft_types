@@ -43,169 +43,134 @@ export type MediaType = 'image' | 'audio' | 'video';
 // LLM Provider Models
 // =============================================================================
 
-/** OpenAI model options (March 2026) */
+/** OpenAI model options (verified 2026-08-18) */
 export type OpenAiModel =
-  // GPT-5.4 family (latest frontier)
+  | 'gpt-5.6-sol'
+  | 'gpt-5.6-terra'
+  | 'gpt-5.6-luna'
+  | 'gpt-5.5'
   | 'gpt-5.4'
   | 'gpt-5.4-mini'
   | 'gpt-5.4-nano'
-  // GPT-4.1 family (coding-specialized, still in API)
+  | 'gpt-5'
+  | 'gpt-5-mini'
+  | 'gpt-5-nano'
   | 'gpt-4.1'
   | 'gpt-4.1-mini'
   | 'gpt-4.1-nano'
-  // GPT-4o family (omni - multimodal)
   | 'gpt-4o'
-  | 'gpt-4o-mini'
-  // Reasoning models (o-series)
-  | 'o3'
-  | 'o3-pro'
-  | 'o4-mini';
+  | 'gpt-4o-mini';
 
-/** Anthropic model options (March 2026) */
+/** Anthropic model options (verified 2026-08-18) */
 export type AnthropicModel =
-  // Claude 4.6 (latest)
-  | 'claude-opus-4-6-20260205'
-  | 'claude-sonnet-4-6-20260217'
-  // Claude 4.5
+  | 'claude-fable-5'
+  | 'claude-opus-5'
+  | 'claude-sonnet-5'
+  | 'claude-haiku-4-5'
+  | 'claude-opus-4-8'
+  | 'claude-opus-4-7'
+  | 'claude-opus-4-6'
+  | 'claude-sonnet-4-6'
   | 'claude-opus-4-5-20251101'
-  | 'claude-sonnet-4-5-20250929'
-  | 'claude-haiku-4-5-20251001'
-  // Claude 4.1
-  | 'claude-opus-4-1-20250805'
-  // Claude 4 (May 2025)
-  | 'claude-sonnet-4-20250514'
-  | 'claude-opus-4-20250514';
+  | 'claude-sonnet-4-5-20250929';
 
-/** Google Gemini model options (March 2026) */
+/** Google Gemini model options (verified 2026-08-18) */
 export type GeminiModel =
-  // Gemini 3.1 (latest)
+  | 'gemini-3.7-flash'
+  | 'gemini-3.6-flash'
+  | 'gemini-3.5-flash'
+  | 'gemini-3.5-flash-lite'
+  | 'gemini-3.1-flash-lite'
   | 'gemini-3.1-pro-preview'
-  | 'gemini-3.1-flash-lite-preview'
-  | 'gemini-3.1-flash-image-preview'
-  // Gemini 3
   | 'gemini-3-flash-preview'
-  | 'gemini-3-pro-image-preview'
-  // Gemini 2.5
+  | 'gemini-3.1-flash-image'
+  | 'gemini-3.1-flash-lite-image'
+  | 'gemini-3-pro-image'
   | 'gemini-2.5-pro'
   | 'gemini-2.5-flash'
   | 'gemini-2.5-flash-lite'
   | 'gemini-2.5-flash-image'
-  | 'gemini-2.5-flash-native-audio-preview';
+  | 'gemini-2.5-flash-native-audio-preview-12-2025'
+  | 'veo-3.1-generate-preview'
+  | 'veo-3.1-lite-generate-preview';
 
-/** Mistral AI model options (March 2026) */
+/** Mistral AI model options (verified 2026-08-18) */
 export type MistralModel =
-  // Large models
-  | 'mistral-large-2512' // Mistral Large 3 (MoE 41B/675B)
   | 'mistral-large-latest'
-  // Medium models
-  | 'mistral-medium-3.1'
+  | 'mistral-large-2512'
   | 'mistral-medium-latest'
-  // Small models
-  | 'mistral-small-2603' // Mistral Small 4 (hybrid reasoning/coding/instruct)
   | 'mistral-small-latest'
-  // Ministral family (small, efficient)
-  | 'ministral-3b-2512'
-  | 'ministral-8b-2512'
+  | 'mistral-small-2603'
   | 'ministral-14b-2512'
-  // Code models
-  | 'devstral-2512' // Devstral 2
-  | 'codestral-2508'
+  | 'ministral-8b-2512'
+  | 'ministral-3b-2512'
   | 'codestral-latest'
-  // Reasoning models (Magistral)
-  | 'magistral-medium-2509'
-  | 'magistral-small-2509'
-  | 'magistral-medium-latest'
-  | 'magistral-small-latest'
-  // Vision models (Pixtral)
-  | 'pixtral-large-2411'
-  | 'pixtral-large-latest'
-  // Audio models (Voxtral)
-  | 'voxtral-small'
-  | 'voxtral-mini'
-  // Document AI
-  | 'mistral-ocr-2512';
+  | 'codestral-2508'
+  | 'mistral-ocr-latest';
 
-/** Cohere model options (March 2026) */
+/** Cohere model options (verified 2026-08-18) */
 export type CohereModel =
-  // Command A family (latest)
-  | 'command-a-03-2025' // Most performant
-  | 'command-a-reasoning-08-2025' // Hybrid reasoning, 256K context
-  | 'command-a-vision-07-2025' // Vision capable
-  | 'command-a-translate-08-2025' // Machine translation, 23 languages
-  // Command R family
-  | 'command-r7b-12-2024' // Lightweight 7B
+  | 'command-a-plus-05-2026'
+  | 'command-a-03-2025'
+  | 'command-a-reasoning-08-2025'
+  | 'command-a-vision-07-2025'
+  | 'command-a-translate-08-2025'
+  | 'command-r7b-12-2024'
   | 'command-r-plus-08-2024'
   | 'command-r-08-2024';
 
-/** Groq model options (March 2026 - fast inference) */
+/** Groq model options (verified 2026-08-18) */
 export type GroqModel =
-  // Llama models
-  | 'llama-3.3-70b-versatile'
-  | 'llama-3.1-8b-instant'
-  | 'meta-llama/llama-4-scout-17b-16e-instruct'
-  // GPT OSS models
   | 'openai/gpt-oss-120b'
   | 'openai/gpt-oss-20b'
-  // Other models
-  | 'qwen/qwen3-32b'
-  | 'moonshotai/kimi-k2-instruct-0905'
-  // Compound (agentic with web search)
+  | 'qwen/qwen3.6-27b'
+  | 'minimaxai/minimax-m2.7'
   | 'groq/compound'
   | 'groq/compound-mini'
-  // Audio
   | 'whisper-large-v3'
   | 'whisper-large-v3-turbo';
 
-/** xAI (Grok) model options (March 2026) */
+/** xAI (Grok) model options (verified 2026-08-18) */
 export type XaiModel =
-  // Grok 4.20 (latest flagship)
+  | 'grok-4.6'
+  | 'grok-4.5'
+  | 'grok-4.3'
   | 'grok-4.20-0309-reasoning'
   | 'grok-4.20-0309-non-reasoning'
-  // Grok 4.1 Fast
-  | 'grok-4-1-fast-reasoning'
-  | 'grok-4-1-fast-non-reasoning'
-  // Grok Code
-  | 'grok-code-fast-1';
+  | 'grok-4.20-multi-agent-0309'
+  | 'grok-build-0.1';
 
-/** DeepSeek model options (March 2026) */
-export type DeepSeekModel =
-  // V3.2 (latest - both modes share same model)
-  | 'deepseek-chat' // Non-thinking mode of V3.2
-  | 'deepseek-reasoner'; // Thinking mode of V3.2
+/** DeepSeek model options (verified 2026-08-18) */
+export type DeepSeekModel = 'deepseek-v4-pro' | 'deepseek-v4-flash';
 
-/** Perplexity model options (March 2026) */
+/** Perplexity model options (verified 2026-08-18) */
 export type PerplexityModel =
-  // Sonar family (current)
-  | 'sonar' // Lightweight search
-  | 'sonar-pro' // Deeper retrieval
-  | 'sonar-reasoning-pro' // Multi-step reasoning with web search
-  | 'sonar-deep-research'; // Long-form reports
+  | 'sonar'
+  | 'sonar-pro'
+  | 'sonar-pro-search'
+  | 'sonar-reasoning-pro'
+  | 'sonar-deep-research';
 
-/** Custom LLM server models (suggested options, user can also type custom) */
+/** Custom LLM server models (suggested options; any string is valid) */
 export type LlmServerModel =
-  // Text models (trending on LM Studio March 2026)
-  | 'openai/gpt-oss-20b'
-  | 'openai/gpt-oss-120b'
-  | 'meta-llama/llama-4-scout-17b-16e-instruct'
-  | 'deepseek/deepseek-r1-0528-qwen3-8b'
-  | 'qwen/qwen3-8b'
-  | 'qwen/qwen3-14b'
-  | 'qwen/qwen3-30b-a3b-2507'
-  | 'qwen/qwen3-4b-2507'
-  | 'qwen/qwen3-4b-thinking-2507'
-  | 'qwen/qwen3-coder-30b'
-  | 'mistralai/mistral-small-4'
-  | 'mistralai/ministral-3-14b-reasoning'
-  | 'mistralai/magistral-small-2509'
-  // Vision models (LM Studio / local)
-  | 'google/gemma-3-4b'
-  | 'google/gemma-3-12b'
-  | 'google/gemma-3-27b'
-  | 'google/gemma-3n-e4b'
-  | 'qwen/qwen3-vl-4b'
-  | 'qwen/qwen3-vl-8b'
-  | 'qwen/qwen3-vl-30b'
-  | string; // User can type any custom model name
+  | 'qwen3-8b'
+  | 'qwen3-14b'
+  | 'qwen3-30b-a3b'
+  | 'qwen2.5-coder-14b-instruct'
+  | 'mistral-7b-instruct-v0.3'
+  | 'deepseek-r1-distill-qwen-7b'
+  | 'gemma-3-4b-it'
+  | 'gemma-3-12b-it'
+  | 'gemma-3-27b-it'
+  | 'qwen2.5-vl-3b-instruct'
+  | 'qwen2.5-vl-7b-instruct'
+  | 'qwen2.5-vl-32b-instruct'
+  | 'qwen2.5-vl-72b-instruct'
+  | 'glm-4v-9b'
+  | 'pixtral-12b-2409'
+  | 'olmocr-2-7b-1025'
+  | 'janus-pro-7b'
+  | string;
 
 /** Union of all model types */
 export type LlmModel =
@@ -243,64 +208,68 @@ export const LLM_PROVIDERS: LlmProvider[] = [
  */
 export const PROVIDER_MODELS: Record<LlmProvider, readonly string[]> = {
   openai: [
+    'gpt-5.6-sol',
+    'gpt-5.6-terra',
+    'gpt-5.6-luna',
+    'gpt-5.5',
     'gpt-5.4',
     'gpt-5.4-mini',
     'gpt-5.4-nano',
+    'gpt-5',
+    'gpt-5-mini',
+    'gpt-5-nano',
     'gpt-4.1',
     'gpt-4.1-mini',
     'gpt-4.1-nano',
     'gpt-4o',
     'gpt-4o-mini',
-    'o3',
-    'o3-pro',
-    'o4-mini',
   ] as const,
   anthropic: [
-    'claude-opus-4-6-20260205',
-    'claude-sonnet-4-6-20260217',
+    'claude-fable-5',
+    'claude-opus-5',
+    'claude-sonnet-5',
+    'claude-haiku-4-5',
+    'claude-opus-4-8',
+    'claude-opus-4-7',
+    'claude-opus-4-6',
+    'claude-sonnet-4-6',
     'claude-opus-4-5-20251101',
     'claude-sonnet-4-5-20250929',
-    'claude-haiku-4-5-20251001',
-    'claude-opus-4-1-20250805',
-    'claude-sonnet-4-20250514',
-    'claude-opus-4-20250514',
   ] as const,
   gemini: [
+    'gemini-3.7-flash',
+    'gemini-3.6-flash',
+    'gemini-3.5-flash',
+    'gemini-3.5-flash-lite',
+    'gemini-3.1-flash-lite',
     'gemini-3.1-pro-preview',
-    'gemini-3.1-flash-lite-preview',
-    'gemini-3.1-flash-image-preview',
     'gemini-3-flash-preview',
-    'gemini-3-pro-image-preview',
+    'gemini-3.1-flash-image',
+    'gemini-3.1-flash-lite-image',
+    'gemini-3-pro-image',
     'gemini-2.5-pro',
     'gemini-2.5-flash',
     'gemini-2.5-flash-lite',
     'gemini-2.5-flash-image',
-    'gemini-2.5-flash-native-audio-preview',
+    'gemini-2.5-flash-native-audio-preview-12-2025',
+    'veo-3.1-generate-preview',
+    'veo-3.1-lite-generate-preview',
   ] as const,
   mistral: [
-    'mistral-large-2512',
     'mistral-large-latest',
-    'mistral-medium-3.1',
+    'mistral-large-2512',
     'mistral-medium-latest',
-    'mistral-small-2603',
     'mistral-small-latest',
-    'ministral-3b-2512',
-    'ministral-8b-2512',
+    'mistral-small-2603',
     'ministral-14b-2512',
-    'devstral-2512',
-    'codestral-2508',
+    'ministral-8b-2512',
+    'ministral-3b-2512',
     'codestral-latest',
-    'magistral-medium-2509',
-    'magistral-small-2509',
-    'magistral-medium-latest',
-    'magistral-small-latest',
-    'pixtral-large-2411',
-    'pixtral-large-latest',
-    'voxtral-small',
-    'voxtral-mini',
-    'mistral-ocr-2512',
+    'codestral-2508',
+    'mistral-ocr-latest',
   ] as const,
   cohere: [
+    'command-a-plus-05-2026',
     'command-a-03-2025',
     'command-a-reasoning-08-2025',
     'command-a-vision-07-2025',
@@ -310,33 +279,33 @@ export const PROVIDER_MODELS: Record<LlmProvider, readonly string[]> = {
     'command-r-08-2024',
   ] as const,
   groq: [
-    'llama-3.3-70b-versatile',
-    'llama-3.1-8b-instant',
-    'meta-llama/llama-4-scout-17b-16e-instruct',
     'openai/gpt-oss-120b',
     'openai/gpt-oss-20b',
-    'qwen/qwen3-32b',
-    'moonshotai/kimi-k2-instruct-0905',
+    'qwen/qwen3.6-27b',
+    'minimaxai/minimax-m2.7',
     'groq/compound',
     'groq/compound-mini',
     'whisper-large-v3',
     'whisper-large-v3-turbo',
   ] as const,
   xai: [
+    'grok-4.6',
+    'grok-4.5',
+    'grok-4.3',
     'grok-4.20-0309-reasoning',
     'grok-4.20-0309-non-reasoning',
-    'grok-4-1-fast-reasoning',
-    'grok-4-1-fast-non-reasoning',
-    'grok-code-fast-1',
+    'grok-4.20-multi-agent-0309',
+    'grok-build-0.1',
   ] as const,
-  deepseek: ['deepseek-chat', 'deepseek-reasoner'] as const,
+  deepseek: ['deepseek-v4-pro', 'deepseek-v4-flash'] as const,
   perplexity: [
     'sonar',
     'sonar-pro',
+    'sonar-pro-search',
     'sonar-reasoning-pro',
     'sonar-deep-research',
   ] as const,
-  lm_studio: [] as const,
+  lm_studio: [] as const, // any model name is valid on a custom server
 } as const;
 
 /**
