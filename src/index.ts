@@ -971,6 +971,70 @@ export interface UserSettings {
   updated_at: Date | null;
 }
 
+/**
+ * @description A personal API key that authenticates its owner against the
+ * admin routes, as an alternative to a Firebase ID token. A user may hold
+ * several. The secret itself is never present on this type -- see
+ * {@link UserApiKeyCreated} and {@link UserApiKeyRevealed} for the two responses
+ * that carry it.
+ *
+ * Not to be confused with a *project* API key (`sk_live_...`), which
+ * authenticates callers of a published AI endpoint. Personal keys are prefixed
+ * `shyft_`.
+ */
+export interface UserApiKey {
+  /** Unique identifier for this key record */
+  uuid: string;
+  /** Firebase UID of the owner */
+  firebase_uid: string;
+  /** Human-readable label, e.g. "CLI on my laptop" */
+  key_name: string;
+  /** First characters of the key, for display (e.g. "shyft_ab12cd") */
+  key_prefix: string;
+  /** Whether the key is accepted; a deactivated key fails authentication */
+  is_active: boolean;
+  /** ISO 8601 timestamp of the most recent authenticated request, or null if unused */
+  last_used_at: string | null;
+  /** ISO 8601 timestamp when the key was created */
+  created_at: string | null;
+  /** ISO 8601 timestamp of the most recent update */
+  updated_at: string | null;
+}
+
+/**
+ * @description Response from creating a personal API key. This is the only
+ * response that returns the secret without being asked, and the value cannot be
+ * derived from any other endpoint except {@link UserApiKeyRevealed}.
+ */
+export interface UserApiKeyCreated extends UserApiKey {
+  /** The full `shyft_...` key */
+  api_key: string;
+}
+
+/** @description Response from revealing an existing personal API key. */
+export interface UserApiKeyRevealed {
+  /** The full `shyft_...` key */
+  api_key: string;
+}
+
+/**
+ * @description Identity of the authenticated caller, from `GET /users/me`.
+ * The only way an API-key client can learn its own Firebase UID, which the
+ * `/users/:userId/*` routes require.
+ */
+export interface CurrentUser {
+  /** Firebase UID of the caller */
+  firebase_uid: string;
+  /** Caller's email, or null when unavailable */
+  email: string | null;
+  /** Whether the caller is a site admin */
+  siteAdmin: boolean;
+  /** Which credential authenticated this request */
+  auth_method: 'firebase' | 'api_key';
+  /** Display name from the Firebase profile, or null */
+  display_name: string | null;
+}
+
 // =============================================================================
 // Request Body Types
 // =============================================================================
@@ -988,6 +1052,15 @@ export interface UserUpdateRequest {
 }
 
 // User Settings requests
+export interface UserApiKeyCreateRequest {
+  key_name: string;
+}
+
+export interface UserApiKeyUpdateRequest {
+  key_name: Optional<string>;
+  is_active: Optional<boolean>;
+}
+
 export interface UserSettingsUpdateRequest {
   organization_name: Optional<string>;
   organization_path: Optional<string>;
@@ -1293,6 +1366,11 @@ export type AiPromptApiResponse = BaseResponse<AiPromptResponse>;
 // API Key responses
 export type RefreshApiKeyApiResponse = BaseResponse<RefreshApiKeyResponse>;
 export type GetApiKeyApiResponse = BaseResponse<GetApiKeyResponse>;
+export type UserApiKeyListResponse = BaseResponse<UserApiKey[]>;
+export type UserApiKeyResponse = BaseResponse<UserApiKey>;
+export type UserApiKeyCreatedResponse = BaseResponse<UserApiKeyCreated>;
+export type UserApiKeyRevealedResponse = BaseResponse<UserApiKeyRevealed>;
+export type CurrentUserResponse = BaseResponse<CurrentUser>;
 
 // Health check response
 export type HealthCheckResponse = BaseResponse<HealthCheckData>;
