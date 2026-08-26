@@ -1,5 +1,10 @@
 # ShapeShyft Types
 
+> **Git policy — never auto-commit or auto-push.** Leave your work in the working tree.
+> Run `git commit`, `git push`, `gh pr create`, or `scripts/push_all.sh` **only when the user
+> explicitly asks in that turn**. Approval for an earlier change does not carry forward, and
+> finishing a task is not permission to commit it.
+
 TypeScript type definitions for ShapeShyft API - LLM structured output platform.
 
 **npm**: `@sudobility/shapeshyft_types` (public)
@@ -197,3 +202,7 @@ bun run test      # Run tests separately
 - **Re-exports from `@sudobility/types`** -- `ApiResponse<T>`, `successResponse()`, `errorResponse()` are re-exported. Do not duplicate these.
 - **Response helpers are runtime values, not just types** -- `successResponse()` and `errorResponse()` are actual functions.
 - **`LlmApiKeySafe` vs `LlmApiKey`** -- always use `LlmApiKeySafe` in API responses. `LlmApiKey` includes encrypted data that must not be sent to clients.
+
+## Git Workflow
+
+- Do not use feature branches for code changes. Always stay on the current branch.
