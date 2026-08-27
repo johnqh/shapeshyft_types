@@ -821,6 +821,8 @@ export interface Endpoint {
   transcription_extraction_model: string | null;
   /** Whether this endpoint uses web search for supported providers (OpenAI Responses API). */
   web_search: boolean;
+  /** Lifetime number of invocations, counting both successes and failures. Incremented by the API on each call. */
+  call_count: number;
   /** Timestamp when this endpoint was created */
   created_at: Date | null;
   /** Timestamp of the most recent endpoint update */
