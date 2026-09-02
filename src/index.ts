@@ -1316,6 +1316,26 @@ export interface ProviderIpSyncSkipped {
 }
 
 /**
+ * What the API sees about where a request came from.
+ *
+ * Read-only diagnostic for working out which header actually carries the client
+ * address in a given deployment, before trusting one. Only forwarding-related
+ * headers are echoed -- never the credential the request was authenticated with.
+ */
+export interface ClientIpDiagnostics {
+  /** The TCP peer exactly as the server reported it, before normalization */
+  peer_raw: string | null;
+  /** The peer as an IP literal, with any IPv4-mapped IPv6 wrapper removed */
+  peer: string | null;
+  /** True when the peer is a public address, meaning the client reached us directly */
+  peer_is_public: boolean;
+  /** The address the sync would use, or null if it could not be established */
+  resolved_ip: string | null;
+  /** Allowlisted forwarding headers present on the request */
+  forwarding_headers: Record<string, string>;
+}
+
+/**
  * Result of pointing an entity's self-hosted providers at the caller's IP.
  *
  * Every `lm_studio` provider owned by the entity lands in exactly one bucket,
