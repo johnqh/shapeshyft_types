@@ -821,6 +821,17 @@ export interface Endpoint {
   transcription_extraction_model: string | null;
   /** Whether this endpoint uses web search for supported providers (OpenAI Responses API). */
   web_search: boolean;
+  /**
+   * Ceiling on how many tokens the model may generate for one invocation.
+   *
+   * `null` means **no protection**: the generation runs until the model stops or
+   * the provider severs the connection, and the caller pays for everything
+   * produced on the way. Endpoints created before this field existed are null.
+   *
+   * A caller may lower this per invocation, never raise it -- see
+   * {@link AiExecutionRequest}.
+   */
+  max_output_tokens: number | null;
   /** Lifetime number of invocations, counting both successes and failures. Incremented by the API on each call. */
   call_count: number;
   /** Timestamp when this endpoint was created */
@@ -1081,6 +1092,12 @@ export interface EndpointCreateRequest {
   output_media_format?: Optional<'base64' | 'url'>;
   transcription_extraction_model?: Optional<string>;
   web_search?: Optional<boolean>;
+  /**
+   * Output ceiling for this endpoint. Omit to receive
+   * {@link DEFAULT_MAX_OUTPUT_TOKENS}; pass `null` to explicitly opt out of
+   * runaway protection.
+   */
+  max_output_tokens?: Optional<number>;
 }
 
 export interface EndpointUpdateRequest {
@@ -1099,6 +1116,11 @@ export interface EndpointUpdateRequest {
   output_media_format?: Optional<'base64' | 'url'>;
   transcription_extraction_model?: Optional<string>;
   web_search?: Optional<boolean>;
+  /**
+   * Output ceiling for this endpoint. Omit to leave unchanged; pass `null` to
+   * remove the ceiling.
+   */
+  max_output_tokens?: Optional<number>;
 }
 
 // =============================================================================
@@ -1186,8 +1208,52 @@ export interface LlmResponse {
 // AI Endpoint Execution Types
 // =============================================================================
 
+/**
+ * Why the model stopped generating, normalized across providers.
+ *
+ * Providers spell this differently -- OpenAI `finish_reason`, Anthropic
+ * `stop_reason`, Gemini `finishReason` -- and use different vocabularies. These
+ * are the normalized values ShapeShyft reports.
+ */
+export const FINISH_REASONS = [
+  /** The model finished on its own. */
+  'stop',
+  /** The output ceiling was reached; the answer is truncated and likely invalid. */
+  'length',
+  /** The provider's safety system stopped generation. */
+  'content_filter',
+  /** The model stopped to call a tool. */
+  'tool_calls',
+  /** The provider reported a reason ShapeShyft does not recognize. */
+  'other',
+] as const;
+
+/** Why the model stopped generating. See {@link FINISH_REASONS}. */
+export type FinishReason = (typeof FINISH_REASONS)[number];
+
+/**
+ * Output ceiling applied to newly created endpoints when none is supplied.
+ *
+ * Chosen to be comfortably above a normal structured answer while still turning
+ * a runaway generation into a failure measured in seconds rather than the
+ * ~15 minutes a provider timeout takes. Endpoints may raise it, lower it, or set
+ * it to `null` to opt out entirely.
+ *
+ * This is a default for *new* endpoints only. It is never applied retroactively:
+ * an endpoint whose `max_output_tokens` is already `null` stays unprotected.
+ */
+export const DEFAULT_MAX_OUTPUT_TOKENS = 8000;
+
 export interface AiExecutionRequest {
   input: unknown;
+  /**
+   * Lower the endpoint's output ceiling for this one call.
+   *
+   * Clamped to the endpoint's own ceiling, so this can only ever ask for
+   * *fewer* tokens -- it is not a way to escape an operator's limit. Ignored
+   * when the endpoint has no ceiling of its own.
+   */
+  max_output_tokens?: Optional<number>;
 }
 
 export interface AiExecutionResponse {
@@ -1197,7 +1263,19 @@ export interface AiExecutionResponse {
     tokens_output: number;
     latency_ms: number;
     estimated_cost_cents: number;
+    /**
+     * Why the model stopped. Absent when the provider did not report one.
+     * `'length'` means the answer was cut off at the ceiling, which is the
+     * difference between "the model ran away" and "the model returned
+     * something unparseable" -- different faults with different correct fixes.
+     */
+    finish_reason?: FinishReason;
   };
+  /**
+   * True when generation stopped at a token ceiling. `output` is then a
+   * truncated answer that will usually fail schema validation.
+   */
+  truncated?: boolean;
   /** Generated media (images, audio, video) from generative models */
   generated_media?: GeneratedMedia[];
 }
@@ -1205,6 +1283,50 @@ export interface AiExecutionResponse {
 /** Response from /prompt endpoint - returns just the generated prompt */
 export interface AiPromptResponse {
   prompt: string;
+}
+
+// =============================================================================
+// Provider IP Sync Types
+// =============================================================================
+
+/** A provider whose URL was moved to the caller's address. */
+export interface ProviderIpSyncUpdated {
+  uuid: string;
+  key_name: string;
+  /** The URL before the sync */
+  from: string;
+  /** The URL now stored */
+  to: string;
+}
+
+/** A provider already pointing at the caller's address. */
+export interface ProviderIpSyncUnchanged {
+  uuid: string;
+  key_name: string;
+  url: string;
+}
+
+/** A provider left alone, with the reason why. */
+export interface ProviderIpSyncSkipped {
+  uuid: string;
+  key_name: string;
+  url: string | null;
+  /** Why this provider was not rewritten, e.g. its host is a DNS name */
+  reason: string;
+}
+
+/**
+ * Result of pointing an entity's self-hosted providers at the caller's IP.
+ *
+ * Every `lm_studio` provider owned by the entity lands in exactly one bucket,
+ * so a cron job on the home machine can log what actually moved.
+ */
+export interface ProviderIpSyncResponse {
+  /** The address the request arrived from, as written into the URLs */
+  client_ip: string;
+  updated: ProviderIpSyncUpdated[];
+  unchanged: ProviderIpSyncUnchanged[];
+  skipped: ProviderIpSyncSkipped[];
 }
 
 // =============================================================================

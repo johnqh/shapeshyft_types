@@ -10,6 +10,9 @@ import {
   isValidModelForProvider,
   PROVIDER_MODELS,
   LLM_PROVIDERS,
+  DEFAULT_MAX_OUTPUT_TOKENS,
+  FINISH_REASONS,
+  type FinishReason,
   type LlmProvider,
   type HttpMethod,
   type JsonSchema,
@@ -1613,6 +1616,52 @@ describe('shapeshyft_types', () => {
       expect(response.success).toBe(true);
       expect(response.data.aggregate.total_requests).toBe(0);
       expect(response.data.by_endpoint).toEqual([]);
+    });
+  });
+  describe('output limit types', () => {
+    it('should expose a default output ceiling that is a sane positive integer', () => {
+      expect(Number.isInteger(DEFAULT_MAX_OUTPUT_TOKENS)).toBe(true);
+      expect(DEFAULT_MAX_OUTPUT_TOKENS).toBeGreaterThan(0);
+      // Large enough for a real structured answer, small enough that a runaway
+      // is caught in seconds rather than minutes.
+      expect(DEFAULT_MAX_OUTPUT_TOKENS).toBeGreaterThanOrEqual(1000);
+      expect(DEFAULT_MAX_OUTPUT_TOKENS).toBeLessThanOrEqual(32000);
+    });
+
+    it('should enumerate every finish reason exactly once', () => {
+      expect(new Set(FINISH_REASONS).size).toBe(FINISH_REASONS.length);
+      expect(FINISH_REASONS).toContain('stop');
+      expect(FINISH_REASONS).toContain('length');
+    });
+
+    it('should allow an endpoint to carry a null output ceiling meaning no limit', () => {
+      const unlimited: Pick<Endpoint, 'max_output_tokens'> = {
+        max_output_tokens: null,
+      };
+      const capped: Pick<Endpoint, 'max_output_tokens'> = {
+        max_output_tokens: 4000,
+      };
+
+      expect(unlimited.max_output_tokens).toBeNull();
+      expect(capped.max_output_tokens).toBe(4000);
+    });
+
+    it('should report the finish reason alongside token usage', () => {
+      const reason: FinishReason = 'length';
+      const response: AiExecutionResponse = {
+        output: {},
+        usage: {
+          tokens_input: 3143,
+          tokens_output: 948,
+          latency_ms: 200,
+          estimated_cost_cents: 1,
+          finish_reason: reason,
+        },
+        truncated: true,
+      };
+
+      expect(response.usage.finish_reason).toBe('length');
+      expect(response.truncated).toBe(true);
     });
   });
 });
