@@ -822,6 +822,19 @@ export interface Endpoint {
   /** Whether this endpoint uses web search for supported providers (OpenAI Responses API). */
   web_search: boolean;
   /**
+   * Sampling temperature for this endpoint's model.
+   *
+   * `null` means **say nothing**, which is what every endpoint did before this
+   * field existed, and the providers disagree about what that implies: OpenAI,
+   * Gemini and Groq apply their own default of 0, while Anthropic omits the
+   * parameter entirely because Opus 4.7+ and Sonnet 5 reject it outright. A 0
+   * stored here is therefore a real choice — repeatable answers — and not the
+   * same as leaving it unset.
+   *
+   * 0 to 2 is OpenAI's and Gemini's range; Anthropic's is 0 to 1.
+   */
+  temperature: number | null;
+  /**
    * Ceiling on how many tokens the model may generate for one invocation.
    *
    * `null` means **no protection**: the generation runs until the model stops or
@@ -1092,6 +1105,8 @@ export interface EndpointCreateRequest {
   output_media_format?: Optional<'base64' | 'url'>;
   transcription_extraction_model?: Optional<string>;
   web_search?: Optional<boolean>;
+  /** Sampling temperature (0-2). Omit or pass null to leave it to the provider. */
+  temperature?: Optional<number>;
   /**
    * Output ceiling for this endpoint. Omit to receive
    * {@link DEFAULT_MAX_OUTPUT_TOKENS}; pass `null` to explicitly opt out of
@@ -1116,6 +1131,8 @@ export interface EndpointUpdateRequest {
   output_media_format?: Optional<'base64' | 'url'>;
   transcription_extraction_model?: Optional<string>;
   web_search?: Optional<boolean>;
+  /** Sampling temperature (0-2). `null` clears it, leaving sampling to the provider. */
+  temperature?: Optional<number>;
   /**
    * Output ceiling for this endpoint. Omit to leave unchanged; pass `null` to
    * remove the ceiling.
