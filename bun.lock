@@ -4,6 +4,9 @@
   "workspaces": {
     "": {
       "name": "@sudobility/shapeshyft_types",
+      "dependencies": {
+        "@sudobility/shapeshyft_engine": "^1.0.1",
+      },
       "devDependencies": {
         "@eslint/js": "^9.39.2",
         "@sudobility/types": "^1.9.67",
@@ -150,6 +153,8 @@
     "@rollup/rollup-win32-x64-msvc": ["@rollup/rollup-win32-x64-msvc@4.54.0", "", { "os": "win32", "cpu": "x64" }, "sha512-hYT5d3YNdSh3mbCU1gwQyPgQd3T2ne0A3KG8KSBdav5TiBg6eInVmV+TeR5uHufiIgSFg0XsOWGW5/RhNcSvPg=="],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
+
+    "@sudobility/shapeshyft_engine": ["@sudobility/shapeshyft_engine@1.0.1", "", { "dependencies": { "@sudobility/types": "^1.9.67" }, "peerDependencies": { "@anthropic-ai/sdk": "^0.39.0", "@google/generative-ai": "^0.21.0", "groq-sdk": "^0.37.0", "openai": "^4.77.0", "sharp": "^0.34.5" }, "optionalPeers": ["@anthropic-ai/sdk", "@google/generative-ai", "groq-sdk", "openai", "sharp"] }, "sha512-G85zVoqIVI+kJIr70XralnT+sy6FHahd40I5tzIQDdfJz+aIO4Vm1B6CNrEwlbW1TZA6yP74qRnuZT3r8xtw8w=="],
 
     "@sudobility/types": ["@sudobility/types@1.9.67", "", {}, "sha512-d+jk4L9i8VNvOnCJW/craqiiUTPH5aRq4KYe/QBrBU3mCcTfoYjgzzXopVQRcthiZ5dwQAEpdqCTQ0gAWRN6Ww=="],
 
