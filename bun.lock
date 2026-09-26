@@ -9,7 +9,7 @@
       },
       "devDependencies": {
         "@eslint/js": "^9.39.2",
-        "@sudobility/types": "^1.9.67",
+        "@sudobility/types": "^1.9.68",
         "@typescript-eslint/eslint-plugin": "^8.50.0",
         "@typescript-eslint/parser": "^8.50.0",
         "eslint": "^9.39.2",
@@ -21,7 +21,7 @@
         "vitest": "^4.0.16",
       },
       "peerDependencies": {
-        "@sudobility/types": "^1.9.67",
+        "@sudobility/types": "^1.9.68",
       },
     },
   },
@@ -156,7 +156,7 @@
 
     "@sudobility/shapeshyft_engine": ["@sudobility/shapeshyft_engine@1.0.8", "", { "dependencies": { "@sudobility/types": "^1.9.67" }, "peerDependencies": { "@anthropic-ai/sdk": "^0.39.0", "@google/generative-ai": "^0.21.0", "groq-sdk": "^0.37.0", "openai": "^4.77.0", "sharp": "^0.35.4" }, "optionalPeers": ["@anthropic-ai/sdk", "@google/generative-ai", "groq-sdk", "openai", "sharp"] }, "sha512-9HidsokWDJP6WrPtBrUO2BLogSeD3jw84om5Uv3MyT4O43ZaMjbAeYUo/OSb/w8eNBJBWF51xdr1b0PJ+E9qDw=="],
 
-    "@sudobility/types": ["@sudobility/types@1.9.67", "", {}, "sha512-d+jk4L9i8VNvOnCJW/craqiiUTPH5aRq4KYe/QBrBU3mCcTfoYjgzzXopVQRcthiZ5dwQAEpdqCTQ0gAWRN6Ww=="],
+    "@sudobility/types": ["@sudobility/types@1.9.68", "", {}, "sha512-4LL5+UfcqQcc0PKKR/z/PqS6j9DQPVkkjL+3oOW+Bwx0TAu1SVKAlPhlt/9ruNMW+abcHuZoFvbOVD5gdYBSGw=="],
 
     "@types/chai": ["@types/chai@5.2.3", "", { "dependencies": { "@types/deep-eql": "*", "assertion-error": "^2.0.1" } }, "sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA=="],
 
